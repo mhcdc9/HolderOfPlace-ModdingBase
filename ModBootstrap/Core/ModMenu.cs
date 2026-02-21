@@ -19,8 +19,6 @@ namespace ModdingCore
         UIButton_Generic right;
         TextMeshPro textbox;
 
-        TMP_InputField inputField;
-
         public static void CreateModMenu()
         {
             if (main != null)
@@ -59,9 +57,6 @@ namespace ModdingCore
 
             textbox = UIFactory.Text(transform, new Vector3(0, 10, 0), "Mod: Off", 24);
 
-
-            inputField = UIFactory.NewInputField("Test Input", transform, new Vector3(0, -10, 0), new Vector2(50, 6), "Try typing something!");
-            inputField.transform.localScale = new Vector3(5, 5, 1);
         }
         
         public void Update()
@@ -83,8 +78,6 @@ namespace ModdingCore
         public void CenterClicked()
         {
             System.Console.WriteLine("You clicked on a mod. Good Job!");
-            inputField.ActivateInputField();
-            inputField.Select();
             if (textbox.text == "Mod: Off")
             {
                 textbox.SetText("Mod: On");

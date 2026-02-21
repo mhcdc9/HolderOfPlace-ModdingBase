@@ -385,6 +385,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\CommandLine.cs" />
     <Compile Include="Core\ErrorPopup.cs" />
     <Compile Include="Core\Console.cs" />
     <Compile Include="Core\BootstrapMain.cs" />
@@ -404,6 +405,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "C:\Users\Michael\source\repos\PlaceHolder\Test\bin\Debug\ModBootstrap.dll" "C:\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\ModBootstrap.dll"</PostBuildEvent>
+    <PostBuildEvent>copy "C:\Users\Michael\source\repos\PlaceHolder\ModBootstrap\bin\Debug\ModBootstrap.dll" "C:\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\ModBootstrap.dll"</PostBuildEvent>
   </PropertyGroup>
 </Project>

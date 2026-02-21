@@ -19,6 +19,8 @@ namespace ModdingCore
         public static Harmony mainHarmony;
         public static List<HopMod> mods = new List<HopMod>();
 
+        public static int inputBlock = 0;
+
 
         public static bool explorerLoaded = false;
 
@@ -64,6 +66,12 @@ namespace ModdingCore
         //Skills
 
         //Status
+
+        public static bool IsInputAllowed()
+        {
+            return (inputBlock == 0);
+        }
+
         public static void Start()
         {
             if (mainHarmony == null)
@@ -73,6 +81,7 @@ namespace ModdingCore
                 modPath = StreamingAssetPath + "/Mods";
                 StartHarmony();
                 ModMenu.CreateModMenu();
+                CommandLine.CreateCommandLineHolder();
             }
             OpenUnityExplorer();
         }

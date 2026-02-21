@@ -18,8 +18,15 @@ namespace ModdingCore
 
         public SpriteRenderer image;
         public TextMeshPro textbox;
+
+        static int skipFirstFew = 3;
         public static void Open(string logString, string stackTrace)
         {
+            if (skipFirstFew > 0)
+            {
+                skipFirstFew--;
+                return;
+            }
             CreatePopup();
             String s = String.Format(errorTemplate, logString + "\n" + stackTrace);
             popup.textbox.SetText(s);
@@ -38,12 +45,13 @@ namespace ModdingCore
 
             GameObject parent = FindAnyObjectByType<CodexControl>()?.gameObject 
                 ?? FindAnyObjectByType<CombatControl>()?.gameObject
+                ?? FindAnyObjectByType<TitleScreenControl>()?.gameObject
                 ?? FindAnyObjectByType<BackgroundControl>()?.gameObject;
 
             if (parent != null)
             {
                 popup.transform.SetParent(parent.transform, false);
-                popup.transform.position = new Vector3(130, 10, 0);
+                popup.transform.position = new Vector3(0, 10, 0);
                 Debug.Log("[MOD] Parent Control Found!");
             }
             else
@@ -52,7 +60,7 @@ namespace ModdingCore
             }
 
             popup.image = UIFactory.Box(popup.transform, Vector3.zero, new Color(0.5f, 0, 0, 0.9f));
-            popup.image.transform.localScale = new Vector3(200, 100, 1);
+            popup.image.transform.localScale = new Vector3(250, 150, 1);
 
             GameObject textObject = new GameObject("Textbox");
             popup.textbox = textObject.AddComponent<TextMeshPro>();

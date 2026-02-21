@@ -24,6 +24,21 @@ namespace ModUtils
 
         }
 
+        protected virtual void PostCreateAssets()
+        {
+
+        }
+
+        protected virtual void SendData(string guid, List<object> data)
+        {
+
+        }
+
+        protected virtual void ReceiveData(string guid, List<object> data)
+        {
+
+        }
+
         protected virtual void OnEnable()
         {
             enabled = true;

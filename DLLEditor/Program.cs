@@ -24,17 +24,19 @@ internal class Program
         AssemblyDefinition _assembly = AssemblyDefinition.ReadAssembly(assemblyPath, new ReaderParameters { AssemblyResolver = resolver });
         AssemblyDefinition _mod = AssemblyDefinition.ReadAssembly( modPath, new ReaderParameters { AssemblyResolver = resolver });
 
+        //Spare Change [Unused]
         var _menuSettings = FindMethod(_assembly, nameof(UIButton_MenuSettings), nameof(UIButton_MenuSettings.MouseDownEffect));
         ILProcessor processor = _menuSettings.Body.GetILProcessor();
         var instruction = processor.Body.Instructions[0];
         processor.InsertBefore(instruction, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.OpenUnityExplorer), Array.Empty<Type>())));
 
-
+        //MAIN CODE BLOCK!!!
         var _titleScreen = FindMethod(_assembly, nameof(TitleScreenControl), "Start");
         processor = _titleScreen.Body.GetILProcessor();
         instruction = processor.Body.Instructions[0];
         processor.InsertBefore(instruction, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.Start), Array.Empty<Type>())));
 
+        //Event Insertion: Card Generated
         var _cardGenerated = FindMethod(_assembly, nameof(RecruitPanel), nameof(RecruitPanel.Generate), 5);
         processor = _cardGenerated.Body.GetILProcessor();
         instruction = processor.Body.Instructions.FirstOrDefault(i =>
@@ -53,21 +55,38 @@ internal class Program
         int index = processor.Body.Instructions.ToList().IndexOf(instruction) + 2;
         processor.InsertAfter(index, processor.Create(OpCodes.Call, GetMethodReference<ModEvents>(_assembly, nameof(ModEvents.InvokeCardGenerated), new Type[] { typeof(Card) })));
         processor.InsertAfter(index, processor.Create(OpCodes.Ldloc_0));
-        /*Console.WriteLine("Old Lines");
-        for (int i = 0; i < processor.Body.Instructions.Count; i++)
-        {
-            Console.WriteLine(processor.Body.Instructions[i].ToString());
-        }
-        processor.Clear();
 
-        processor.Append(processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.Start), new Type[] { })));
-        processor.Append(processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly,nameof(BootstrapMain.SpoofVisits),new Type[] { })));
-        processor.Append(processor.Create(OpCodes.Ret));
-        Console.WriteLine("New Lines");
-        for (int i = 0; i < processor.Body.Instructions.Count; i++)
+        var _buttonUpdate = FindMethod(_assembly, nameof(UIButton), nameof(UIButton.Update), 0);
+        processor = _buttonUpdate.Body.GetILProcessor();
+        for(int i=0; i<processor.Body.Instructions.Count; i++)
         {
-            Console.WriteLine(processor.Body.Instructions[i].ToString());
-        }*/
+            var ins = processor.Body.Instructions[i];
+            //System.Console.WriteLine(ins.Operand?.ToString() ?? "null");
+            if (ins.Operand?.ToString() == "System.Void ADV.UIButton::MouseDownEffect()")
+            {
+                System.Console.WriteLine("Adding extra check to mousedown");
+                var postIns = processor.Body.Instructions[i+1];
+                var endOfCheck = processor.Body.Instructions[i - 2];
+                System.Console.WriteLine(endOfCheck);
+                processor.InsertAfter(endOfCheck, processor.Create(OpCodes.Brfalse_S, postIns));
+                processor.InsertAfter(endOfCheck, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.IsInputAllowed), Array.Empty<Type>())));
+                System.Console.WriteLine(endOfCheck);
+                i += 2;
+            }
+            if (ins.Operand?.ToString() == "System.Void ADV.UIButton::MouseUpEffect()")
+            {
+                System.Console.WriteLine("Adding extra check to mouseup");
+                var postIns = processor.Body.Instructions[i + 1];
+                var endOfCheck = processor.Body.Instructions[i - 2];
+                System.Console.WriteLine(endOfCheck);
+                processor.InsertBefore(endOfCheck, processor.Create(OpCodes.Brfalse, postIns));
+                processor.InsertBefore(endOfCheck, processor.Create(OpCodes.Call, GetMethodReference<BootstrapMain>(_assembly, nameof(BootstrapMain.IsInputAllowed), Array.Empty<Type>())));
+                System.Console.WriteLine(endOfCheck);
+
+                i += 2;
+            }
+        }
+
 
         Console.WriteLine("Outputting!");
         _assembly.Write(outputPath);
