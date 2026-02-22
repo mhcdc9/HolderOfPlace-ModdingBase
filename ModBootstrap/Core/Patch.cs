@@ -57,15 +57,6 @@ namespace ModdingCore
         
     }
 
-    [HarmonyPatch(typeof(CodexEntry_EncounterInfo), nameof(CodexEntry_EncounterInfo.GetVisitedCount), new Type[] { })]
-    static class TestPatch
-    {
-        static void Postfix(CodexEntry_EncounterInfo __instance)
-        {
-            throw new Exception("Test of the error popup - Can you see me?");
-        }
-    }
-
     [HarmonyPatch(typeof(Event_FR_RecruitII), nameof(Event_FR_RecruitII.IniRecruit), new Type[]
     {
         typeof(List<string>),

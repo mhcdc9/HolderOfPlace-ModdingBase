@@ -19,7 +19,7 @@ namespace ModdingCore
         public SpriteRenderer image;
         public TextMeshPro textbox;
 
-        static int skipFirstFew = 3;
+        static int skipFirstFew = 0;
         public static void Open(string logString, string stackTrace)
         {
             if (skipFirstFew > 0)
@@ -66,6 +66,7 @@ namespace ModdingCore
             popup.textbox = textObject.AddComponent<TextMeshPro>();
             textObject.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 60);
             textObject.transform.SetParent(obj.transform);
+            textObject.transform.position = new Vector3(0, 0, -9);
 
             Debug.Log("[MOD] New Popup Created!");
         }

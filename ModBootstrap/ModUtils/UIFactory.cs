@@ -52,6 +52,7 @@ namespace ModUtils
             textbox.SetText(text);
             textbox.fontSizeMax = fontSize;
             textbox.fontSizeMin = fontSize;
+            textbox.fontSize = fontSize;
             textbox.alignment = TextAlignmentOptions.Top;
             
             return textbox;

@@ -25,6 +25,7 @@ namespace ModdingCore
             GameObject obj = new GameObject("CommandLineHolder");
             main = obj.AddComponent<CommandLine>();
             DontDestroyOnLoad(obj);
+            main.CreateInputField();
         }
 
         public void Update()
@@ -55,6 +56,7 @@ namespace ModdingCore
                     ?? FindAnyObjectByType<TitleScreenControl>()?.transform
                     ?? FindAnyObjectByType<BackgroundControl>()?.transform;
                 inputFieldHolder.transform.SetParent(t);
+                inputFieldHolder.transform.position = new Vector3(0, 0, -8);
                 inputFieldHolder.SetActive(true);
 
                 inputField.ActivateInputField();

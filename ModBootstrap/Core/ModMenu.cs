@@ -18,6 +18,11 @@ namespace ModdingCore
         UIButton_Generic left;
         UIButton_Generic right;
         TextMeshPro textbox;
+        SpriteRenderer modIcon;
+        Sprite spriteFallback;
+        int index = 0;
+        List<HopMod> mods = new List<HopMod>();
+        HopMod mod;
 
         public static void CreateModMenu()
         {
@@ -44,8 +49,8 @@ namespace ModdingCore
             transform.localPosition = new Vector3(52, -26, 0);
             center = UIFactory.Button(transform, Vector3.zero, 20, 20);
             center.action = CenterClicked;
-            SpriteRenderer centerBox = UIFactory.Box(center.transform, Vector3.zero, Color.gray);
-            centerBox.transform.localScale = new Vector3(20, 20, 1);
+            modIcon = UIFactory.Box(center.transform, Vector3.zero, Color.gray);
+            modIcon.transform.localScale = new Vector3(20, 20, 1);
             left = UIFactory.Button(transform, new Vector3(-13,0,0), 4, 20);
             left.action = LeftClicked;
             SpriteRenderer leftBox = UIFactory.Box(left.transform, Vector3.zero, Color.gray);
@@ -56,20 +61,39 @@ namespace ModdingCore
             rightBox.transform.localScale = new Vector3(4, 20, 1);
 
             textbox = UIFactory.Text(transform, new Vector3(0, 10, 0), "Mod: Off", 24);
+            textbox.alignment = TextAlignmentOptions.Top;
+            spriteFallback = rightBox.sprite;
 
+            BootstrapMain.LoadMods();
+            mods = BootstrapMain.modDictionary.Values.OrderBy(m => m.Guid).ToList();
+            UpdateIcon();
+        }
+
+        public void UpdateIcon()
+        {
+            if (mods.Count == 0)
+            {
+                return;
+            }
+            mod = mods[index];
+            if (mod.icon == null)
+            {
+                modIcon.sprite = spriteFallback;
+                modIcon.transform.localScale = new Vector3(20, 20, 1);
+            }
+            else
+            {
+                modIcon.sprite = mod.icon;
+                modIcon.transform.localScale = new Vector3(2000f / mod.icon.rect.width, 2000f / mod.icon.rect.height);
+            }
+            string on = mod.enabled ? "On" : "Off";
+            modIcon.color = mod.enabled ? Color.white : Color.gray;
+            textbox.SetText(mod.Title + ": " + on);
         }
         
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                CenterClicked();
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                LeftClicked();
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 RightClicked();
             }
@@ -78,24 +102,46 @@ namespace ModdingCore
         public void CenterClicked()
         {
             System.Console.WriteLine("You clicked on a mod. Good Job!");
-            if (textbox.text == "Mod: Off")
+            
+            if (mod == null)
             {
-                textbox.SetText("Mod: On");
+                return;
+            }
+            if (mod.enabled)
+            {
+                BootstrapMain.UnloadMod(mod);
             }
             else
             {
-                textbox.SetText("Mod: Off");
+                BootstrapMain.LoadMod(mod);
             }
+            UpdateIcon();
         }
 
         public void LeftClicked()
         {
-            System.Console.WriteLine("You clicked on the left button. Good Job!");
+            if (mods.Count == 0)
+            {
+                return;
+            }
+            index--;
+            if (index == -1)
+            {
+                index = mods.Count - 1;
+            }
+            UpdateIcon();
         }
 
         public void RightClicked()
         {
-            System.Console.WriteLine("You clicked on the right button. Good Job!");
+            if (mods.Count == 0)
+            {
+                return;
+            }
+            index++;
+            index %= mods.Count;
+            UpdateIcon();
+            
         }
     }
 }
