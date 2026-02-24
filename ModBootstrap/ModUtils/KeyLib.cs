@@ -18,6 +18,9 @@ namespace ModUtils
         public static string AFTER_ATTACK => ICHANNEL(1.5f);
         public static string PERMANENT => "Permanent[1";
         public static string TRAIT => "Trait[1";
-        
+
+        public static string DELAY_SCALE(float f) => "DelayScale[" + f;
+
+        public static string SPELL => "Spell[1";
     }
 }

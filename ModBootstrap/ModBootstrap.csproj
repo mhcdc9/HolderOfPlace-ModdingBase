@@ -380,9 +380,6 @@
     <Reference Include="UnityEngine.XRModule">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityExplorer.STANDALONE.Mono">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\UnityExplorer.STANDALONE.Mono.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\CommandLine.cs" />

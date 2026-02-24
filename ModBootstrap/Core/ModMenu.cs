@@ -18,6 +18,8 @@ namespace ModdingCore
         UIButton_Generic left;
         UIButton_Generic right;
         TextMeshPro textbox;
+        TextMeshPro textbox2;
+        TextMeshPro textbox3;
         SpriteRenderer modIcon;
         Sprite spriteFallback;
         int index = 0;
@@ -46,7 +48,7 @@ namespace ModdingCore
             {
                 transform.SetParent(parent, false);
             }
-            transform.localPosition = new Vector3(52, -26, 0);
+            transform.localPosition = new Vector3(52, -3, 0);
             center = UIFactory.Button(transform, Vector3.zero, 20, 20);
             center.action = CenterClicked;
             modIcon = UIFactory.Box(center.transform, Vector3.zero, Color.gray);
@@ -60,9 +62,17 @@ namespace ModdingCore
             SpriteRenderer rightBox = UIFactory.Box(right.transform, Vector3.zero, Color.gray);
             rightBox.transform.localScale = new Vector3(4, 20, 1);
 
-            textbox = UIFactory.Text(transform, new Vector3(0, 10, 0), "Mod: Off", 24);
+            textbox = UIFactory.Text(transform, new Vector3(0, 11, 0), "Mod: Off", 24);
+            textbox.GetComponent<RectTransform>().sizeDelta = new Vector2(30, 5);
             textbox.alignment = TextAlignmentOptions.Top;
+            textbox2 = UIFactory.Text(transform, new Vector3(-1, -13, 0), "0 of 0", 18);
+            //textbox2.color = Color.gray;
+            textbox2.alignment = TextAlignmentOptions.TopRight;
+            textbox3 = UIFactory.Text(transform, new Vector3(-1, -16, 0), "0 of 0", 18);
+            textbox3.GetComponent<RectTransform>().sizeDelta = new Vector2(30, 5);
             spriteFallback = rightBox.sprite;
+
+            
 
             BootstrapMain.LoadMods();
             mods = BootstrapMain.modDictionary.Values.OrderBy(m => m.Guid).ToList();
@@ -89,14 +99,8 @@ namespace ModdingCore
             string on = mod.enabled ? "On" : "Off";
             modIcon.color = mod.enabled ? Color.white : Color.gray;
             textbox.SetText(mod.Title + ": " + on);
-        }
-        
-        public void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                RightClicked();
-            }
+            textbox2.SetText("" + (index+1) + " of " + mods.Count);
+            textbox3.SetText(mod.Description);
         }
 
         public void CenterClicked()

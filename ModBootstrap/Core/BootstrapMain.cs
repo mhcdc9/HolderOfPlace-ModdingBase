@@ -26,9 +26,6 @@ namespace ModdingCore
         public static int inputBlock = 0;
 
 
-        public static bool explorerLoaded = false;
-
-
         public static Sprite GetSprite(string path)
         {
             Sprite s = GetSprite(GetTex(path), new Vector2(0.5f, 0.5f));
@@ -90,17 +87,11 @@ namespace ModdingCore
 
                 //LoadMods();
             }
-            OpenUnityExplorer();
         }
 
         public static void OpenUnityExplorer()
         {
-            if (explorerLoaded)
-            {
-                return;
-            }
-            UnityExplorer.ExplorerStandalone.CreateInstance();
-            explorerLoaded = true;
+            //To-do: Update DLLEditor so I can remove this method.
         }
 
         public static void StartHarmony()

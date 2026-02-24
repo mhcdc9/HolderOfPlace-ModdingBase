@@ -56,17 +56,17 @@ namespace ModUtils
                 {
                     continue;
                 }
-                Library.Main.AddKey(c._cardInfo.RealName, c.gameObject);
+                Library.Main.AddKey(c._cardInfo.Key, c.gameObject);
                 lists.Do(l =>
                 {
-                    if (c.pools.Contains(l.name))
+                    if (c.pools.Contains(l.Key))
                     {
-                        l.Keys.Add(c._cardInfo.RealName);
+                        l.Keys.Add(c._cardInfo.Key);
                     }
                 });
                 if (c.pools.Contains("Leader"))
                 {
-                    LibraryExt.leaderPool.Add(c._cardInfo.RealName);
+                    LibraryExt.leaderPool.Add(c._cardInfo.Key);
                 }
             }
         }

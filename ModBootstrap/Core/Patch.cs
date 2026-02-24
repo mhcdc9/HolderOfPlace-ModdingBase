@@ -75,4 +75,18 @@ namespace ModdingCore
             }
         }
     }
+
+    [HarmonyPatch(typeof(UIButton_Settings), nameof(UIButton_Settings.Update))]
+    static class IgnoreSettingErrors
+    {
+        static Exception Finalizer(Exception __exception, UIButton_Settings __instance)
+        {
+            if (__exception != null)
+            {
+                System.Console.WriteLine(__instance.name);
+            }
+            
+            return null;
+        }
+    }
 }

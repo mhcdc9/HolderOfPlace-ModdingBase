@@ -13,8 +13,18 @@ using static ModUtils.KeyLib;
 
 namespace ModUtils
 {
+    public enum CardType
+    {
+        Follower,
+        PassiveFollower,
+        Aspect,
+        Trinket,
+        Enemy
+    }
     public class ModdedCard : MonoBehaviour
     {
+        
+
         public Card _card;
         public CardInfo _cardInfo;
         public Transform _skillParent;
@@ -27,41 +37,7 @@ namespace ModUtils
 
         public static bool freezeAwake = false;
 
-        public static void LokiTest()
-        {
-            //The three S's of HoP coding:
-            //[S]ignals do things but don't stick around.
-            //[S]tatuses stick around but lack nuanced targeting.
-            //[S]kills can target but can only act through signals.
-
-            var signalDemonize = NewSignal<Signal_AddStatus>(TARGET_OTHER);
-                var demonize = NewMark<Mark_Status_DamageInputMod>("Demonize", "DamageMod[2", "Mod[1", "TriggerCount[1");
-                demonize.transform.SetParent(signalDemonize.transform);
-                signalDemonize.StatusPrefabs = new List<GameObject> { demonize.gameObject };
-            
-            var applyDemonize = NewMark<Mark_Skill>("Apply Demonize", PERMANENT, AFTER_ATTACK, TRAIT)
-                .AddTargeting(NewTargeting<Targeting_RandomEnemy>())
-                .AddSignal(signalDemonize,
-                    Signal_AnimColor.NewAnimColor(new Color(0.4f, 0.25f, 0.8f), TARGET_OTHER));
-                
-
-            //Todo: need to add animation signals (and find a nice way of accessing all available ones)
-            //Or maybe create a status display? (<- sounds tedious to code)
-            
-
-            CreateNewCard(BootstrapMain.StreamingAssetPath)
-                .SetName("Loki", "Loki")
-                .SetDesc("After attacking, apply Demonize to a random enemy")
-                .SetStats(1, 2, 0)
-                .SetPools("Leader") //Virtual pool. The real pools are Active, Passive, Aspect, Trinket, Moth, ManaAspect
-                .SetBasePicture("LokiIcon.png")
-                .SetBackground("LokiBackground.png")
-                .SetIdeogram("IdeogramLoki.png")
-                .SetPortrait("PortraitLoki.png")
-                .AddSkills(applyDemonize);
-        }
-
-        public static ModdedCard CreateNewCard(string path)
+        public static ModdedCard CreateNewCard(string path, CardType type)
         {
             if (Library.Main == null)
             {
@@ -70,7 +46,39 @@ namespace ModUtils
                 return null;
             }
             freezeAwake = true;
-            Card card = Instantiate(Library.Main.GetCard("Militia"), LibraryExt.modAssets.transform).GetComponent<Card>();
+            Card card;
+            switch(type)
+            {
+                default:
+                case CardType.Follower:
+                    card = Instantiate(Library.Main.GetCard("Militia"), LibraryExt.modAssets.transform).GetComponent<Card>();
+                    break;
+                case CardType.PassiveFollower:
+                    card = Instantiate(Library.Main.GetCard("Obelisk"), LibraryExt.modAssets.transform).GetComponent<Card>();
+                    for(int i = card.IniSkills.Count-1; i>=0; i--)
+                    {
+                        Destroy(card.IniSkills[i]);
+                    }
+                    card.IniSkills.Clear();
+                    break;
+                case CardType.Aspect:
+                    card = Instantiate(Library.Main.GetCard("Sacrificial"), LibraryExt.modAssets.transform).GetComponent<Card>();
+                    for (int i = card.IniSkills.Count - 1; i >= 0; i--)
+                    {
+                        Destroy(card.IniSkills[i]);
+                    }
+                    card.IniSkills.Clear();
+                    break;
+                case CardType.Trinket:
+                    card = Instantiate(Library.Main.GetCard("Refresh"), LibraryExt.modAssets.transform).GetComponent<Card>();
+                    for (int i = card.IniSkills.Count - 1; i >= 0; i--)
+                    {
+                        Destroy(card.IniSkills[i]);
+                    }
+                    break;
+
+            }
+            card.Info.Portrait = null;
             freezeAwake = false;
             ModdedCard moddedCard = card.AddComponent<ModdedCard>();
             moddedCard.Ini();
@@ -78,9 +86,10 @@ namespace ModUtils
             return moddedCard;
         }
 
-        public static ModdedCard CreateNewCard(HopMod mod)
+        public static ModdedCard CreateNewCard(HopMod mod, CardType type)
         {
-            ModdedCard card = CreateNewCard(mod.modPath);
+            ModdedCard card = CreateNewCard(mod.modPath, type);
+            card.mod = mod;
             return card;
         }
 
@@ -92,12 +101,13 @@ namespace ModUtils
             _statusParent = transform.Find("Status");
         }
 
-        public ModdedCard SetName(string renderName, string realName)
+        public ModdedCard SetName(string name, string key)
         {
-            _cardInfo.RenderName = renderName;
-            _cardInfo.RealName = realName;
-            _cardInfo.Name = realName;
-            gameObject.name = "@" + realName;
+            _cardInfo.RenderName = name;
+            _cardInfo.RealName = name;
+            _cardInfo.Name = name;
+            gameObject.name = "@" + name;
+            _cardInfo.Key = mod.Guid + "." + key;
             return this;
         }
 
@@ -107,18 +117,51 @@ namespace ModUtils
             return this;
         }
 
-        public ModdedCard SetStats(float baseDamage, float life, float costTier)
+        public ModdedCard SetStats(float baseDamage, float life, float cost)
         {
             _card.MaxLife = life;
             _card.Life = life;
             _card.BaseDamage = baseDamage;
-            _card.Cost = costTier;
+            SetCost((int)cost);
+            return this;
+        }
+
+        public static int[] costTiers = { 0, 1, 3, 6, 10, 14, 18, 30 };
+        public ModdedCard SetCost(int cost)
+        {
+            cost = Math.Max(0, cost);
+            for (int i=0; i<costTiers.Length; i++)
+            {
+                if (costTiers[i] == cost)
+                {
+                    _card.Cost = i;
+                    return this;
+                }
+                if (costTiers[i] > cost)
+                {
+                    int prevTierDiff = cost - costTiers[i - 1];
+                    int nextTierDiff = costTiers[i + 1] - cost;
+                    if (prevTierDiff <= nextTierDiff)
+                    {
+                        _card.Cost = i - 1;
+                        _card.SetKey("AddCost", prevTierDiff);
+                        return this;
+                    }
+                    else
+                    {
+                        _card.Cost = i;
+                        _card.SetKey("AddCost", -nextTierDiff);
+                        return this;
+                    }
+                }
+            }
+            _card.Cost = 7;
             return this;
         }
 
         public ModdedCard SetPortrait(string path)
         {
-            return SetPortrait(BootstrapMain.GetSprite(dirPath + "/" + path));
+            return SetPortrait(BootstrapMain.GetSprite(dirPath + "/Images/" + path));
         }
 
         public ModdedCard SetPortrait(Sprite sprite)
@@ -129,7 +172,7 @@ namespace ModUtils
 
         public ModdedCard SetBasePicture(string path)
         {
-            return SetBasePicture(BootstrapMain.GetSprite(dirPath + "/" + path));
+            return SetBasePicture(BootstrapMain.GetSprite(dirPath + "/Images/" + path));
         }
 
         public ModdedCard SetBasePicture(Sprite sprite)
@@ -141,7 +184,7 @@ namespace ModUtils
 
         public ModdedCard SetBackground(string path)
         {
-            return SetBackground(BootstrapMain.GetSprite(dirPath + "/" + path));
+            return SetBackground(BootstrapMain.GetSprite(dirPath + "/Images/" + path));
         }
 
         public ModdedCard SetBackground(Sprite sprite)
@@ -153,7 +196,7 @@ namespace ModUtils
 
         public ModdedCard SetIdeogram(string path)
         {
-            return SetIdeogram(BootstrapMain.GetSprite(path));
+            return SetIdeogram(BootstrapMain.GetSprite(dirPath + "/Images/" + path));
         }
 
         public ModdedCard SetIdeogram(Sprite sprite)

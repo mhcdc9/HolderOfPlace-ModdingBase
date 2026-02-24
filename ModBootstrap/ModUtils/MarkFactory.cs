@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
+using static ModUtils.KeyLib;
 
 namespace ModUtils
 {
@@ -26,6 +28,41 @@ namespace ModUtils
             }
             return mark;
         }
+        public static T NewSignal<T>(params string[] keys) where T : Signal
+        {
+            GameObject obj = new GameObject("signal");
+            T signal = obj.AddComponent<T>();
+            obj.name = typeof(T).Name;
+            KeyBase keyBase = obj.AddComponent<KeyBase>();
+            keyBase.Keys = keys.ToList();
+            signal.KB = keyBase;
+            return signal;
+        }
+        public static T NewTargeting<T>(params string[] keys) where T : Targeting
+        {
+            GameObject obj = new GameObject("targeting");
+            T targeting = obj.AddComponent<T>();
+            obj.name = typeof(T).Name;
+            KeyBase keyBase = obj.AddComponent<KeyBase>();
+            keyBase.Keys = keys.ToList();
+            targeting.KB = keyBase;
+            return targeting;
+        }
+        public static Signal_CreateMedium NewMedium<T>(string name, out T medium, params string[] keys) where T : Medium
+        {
+            var signal = NewSignal<Signal_CreateMedium>(keys);
+            medium = signal.gameObject.AddComponent<T>();
+            KeyBase keybase2 = signal.gameObject.AddComponent<KeyBase>();
+            medium.KB = keybase2;
+            keybase2.Keys = new List<string>();
+            medium.Signals = new List<GameObject>();
+            if (medium is Medium_Explosion explosion)
+            {
+                explosion.SubSignals = new List<GameObject>();
+            }
+            signal.MediumPrefab = medium.gameObject;
+            return signal;
+        }
 
         public static T EditMark<T>(this T mark, Action<T> action) where T : Mark
         {
@@ -38,47 +75,81 @@ namespace ModUtils
             action(signal);
             return signal;
         }
-
-        public static T AddSignal<T>(this T skill, params Signal[] signals) where T : Mark_Skill
+        public static Signal_CreateMedium EditMedium<T>(this Signal_CreateMedium signal, Action<T> action) where T:Medium
         {
-            foreach(Signal s in signals)
+            T medium = signal.GetComponent<T>();
+            if (medium != null)
             {
-                s.transform.SetParent(skill.transform);
-                skill.MainSignals.Add(s.gameObject);
+                action(medium);
             }
-            return skill;
-        }
-
-        public static T NewSignal<T>(params string[] keys) where T : Signal
-        {
-            GameObject obj = new GameObject("signal");
-            T signal = obj.AddComponent<T>();
-            obj.name = typeof(T).Name;
-            KeyBase keyBase = obj.AddComponent<KeyBase>();
-            keyBase.Keys = keys.ToList();
-            signal.KB = keyBase;
             return signal;
         }
 
-        public static T AddTargeting<T>(this T skill, params Targeting[] targetings) where T : Mark_Skill
+        public static void AddKeys(this Medium medium, params string[] keys)
         {
-            foreach(Targeting t in targetings)
+            KeyBase kb = medium.GKB();
+            foreach(string key in keys)
             {
-                t.transform.SetParent(skill.transform);
-                skill.Targetings.Add(t.gameObject);
+                kb.Keys.Add(key);
             }
+        }
+
+        public static void AddTo_Generic(Transform parent, List<GameObject> mainList, IEnumerable<GameObject> newObj)
+        {
+            foreach (GameObject g in newObj)
+            {
+                g.transform.SetParent(parent);
+                mainList.Add(g.gameObject);
+            }
+        }
+        public static Mark_Skill AddSignal(this Mark_Skill skill, params Signal[] signals)
+        {
+            AddTo_Generic(skill.transform, skill.MainSignals, signals.Select(s => s.gameObject));
+            return skill;
+        }
+        public static Mark_Trigger AddSignal(this Mark_Trigger trigger, params Signal[] signals)
+        {
+            if (trigger.MainSignals == null)
+            {
+                trigger.MainSignals = new List<GameObject>();
+            }
+            AddTo_Generic(trigger.transform, trigger.MainSignals, signals.Select(s => s.gameObject));
+            return trigger;
+        }
+        public static Medium AddSignal(this Medium medium, params Signal[] signals)
+        {
+            AddTo_Generic(medium.transform, medium.Signals, signals.Select(s => s.gameObject));
+            return medium;
+        }
+        public static Medium_Explosion AddSignal_Explosion(this Medium_Explosion medium, bool addToSubSignalsOnly, params Signal[] signals)
+        {
+            AddTo_Generic(medium.transform, medium.SubSignals, signals.Select(s => s.gameObject));
+            if (!addToSubSignalsOnly)
+            {
+                AddTo_Generic(medium.transform, medium.SubSignals, signals.Select(s => s.gameObject));
+            }
+            return medium;
+        }
+        public static Mark_Skill AddTargeting(this Mark_Skill skill, params Targeting[] targetings)
+        {
+            AddTo_Generic(skill.transform, skill.Targetings, targetings.Select(t => t.gameObject));
             return skill;
         }
 
-        public static T NewTargeting<T>(params string[] keys) where T : Targeting
+        public static Signal_AddSkill NewAddSkill(Mark_Skill skill, params string[] keys)
         {
-            GameObject obj = new GameObject("signal");
-            T targeting = obj.AddComponent<T>();
-            obj.name = typeof(T).Name;
-            KeyBase keyBase = obj.AddComponent<KeyBase>();
-            keyBase.Keys = keys.ToList();
-            targeting.KB = keyBase;
-            return targeting;
+            var addSkill = NewSignal<Signal_AddSkill>(keys);
+            addSkill.SkillPrefab = skill.gameObject;
+            skill.transform.SetParent(addSkill.transform);
+            return addSkill;
+        }
+
+        public static Signal_AddStatus NewAddStatus(Mark_Status status, params string[] keys)
+        {
+            var addStatus = NewSignal<Signal_AddStatus>(keys);
+            addStatus.StatusPrefabs = new List<GameObject> { status.gameObject };
+            status.transform.SetParent(addStatus.transform);
+            return addStatus;
         }
 
         public static Signal_AnimEffect NewAnimEffect(string animKey, params string[] keys)
@@ -94,6 +165,75 @@ namespace ModUtils
             Signal_SoundEvent sound = NewSignal<Signal_SoundEvent>(keys);
             sound.Key = soundKey;
             return sound;
+        }
+
+        public static T InstantiateEditName<T> (this T original, string name) where T:MonoBehaviour
+        {
+            T newObj = GameObject.Instantiate<T>(original);
+            newObj.name = name;
+            return newObj;
+        }
+
+        public static Mark_Trigger_Signal NewTriggerSignal(string triggerKey, params string[] keys)
+        {
+            var triggerSignal = NewMark<Mark_Trigger_Signal>(triggerKey,keys);
+            triggerSignal.TriggerKey = triggerKey;
+            triggerSignal.MainSignals = new List<GameObject>();
+            return triggerSignal;
+        }
+
+        public static T AddMarkInfo<T>(this T mark, string name, string desc) where T:Mark
+        {
+            MarkInfo markInfo = mark.AddComponent<MarkInfo>();
+            markInfo.Name = name;
+            markInfo.Description = desc;
+            return mark;
+        }
+
+        public static T AddAspectTrigger<T>(this T skill) where T : Mark_Skill
+        {
+            skill.AddSignal(NewMedium<Medium_Instant>("AspectTrigger", out var instant, TARGET_OTHER));
+            /*
+            var createMedium = NewSignal<Signal_CreateMedium>(TARGET_OTHER);
+            Medium_Instant medium1 = createMedium.AddComponent<Medium_Instant>();
+            medium1.KB = medium1.AddComponent<KeyBase>();
+            medium1.GKB().Keys = new List<string>();
+            createMedium.MediumPrefab = medium1.gameObject;
+            */
+            var mediumExplosion = NewMedium<Medium_Explosion>("SendToAllFriendly", out var explosion, TARGET_OTHER);
+            /*
+            var mediumExplosion = NewSignal<Signal_CreateMedium_Inverse>(TARGET_OTHER);
+            Medium_Explosion explosion = mediumExplosion.AddComponent<Medium_Explosion>();
+            explosion.KB = explosion.AddComponent<KeyBase>();
+            explosion.GKB().Keys = new List<string>();
+            mediumExplosion.MediumPrefab = explosion.gameObject;
+            */
+            explosion.AddKeys("TargetAllFriendly[1", "TargetDeath[1", "TargetUntargeted[1", "IgnoreSource[0");
+
+            /*
+            explosion.SetKey("TargetAllFriendly", 1);
+            explosion.SetKey("TargetDeath", 1);
+            explosion.SetKey("TargetUntargeted", 1);
+            explosion.SetKey("IgnoreSource", 0);
+            */
+            explosion.AddSignal_Explosion(false, NewSignal<Signal>(TARGET_OTHER, "OnAspect[1", "OnTraitChange[1"));
+            /*
+            explosion.Signals = new List<GameObject> { NewSignal<Signal>(TARGET_OTHER, "OnAspect[1", "OnTraitChange[1").gameObject };
+            explosion.SubSignals = explosion.Signals;
+            explosion.Signals[0].transform.SetParent(explosion.transform);
+            */
+            instant.AddSignal(mediumExplosion,
+                NewSignal<Signal>(TARGET_OTHER, "OnAdditionalTrait[1")
+                );
+            /*
+            instant.Signals = new List<GameObject> { mediumExplosion.gameObject,
+                NewSignal<Signal>(TARGET_OTHER, "OnAdditionalTrait[1").gameObject};
+            instant.Signals[0].transform.SetParent(instant.transform);
+            instant.Signals[1].transform.SetParent(instant.transform);
+            */
+
+            //skill.AddSignal(createMedium);
+            return skill;
         }
     }
 }

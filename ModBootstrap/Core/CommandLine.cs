@@ -38,6 +38,7 @@ namespace ModdingCore
 
         public void ToggleInputField()
         {
+            System.Console.WriteLine("Input Field Toggled");
             if (inputField == null)
             {
                 CreateInputField();
@@ -80,6 +81,7 @@ namespace ModdingCore
         public void CreateInputField()
         {
             inputFieldHolder = new GameObject("InputFieldHolder");
+            inputFieldHolder.SetActive(false);
             SpriteRenderer sr = UIFactory.Box(inputFieldHolder.transform, Vector3.zero, new Color(0, 0, 0, 0.5f));
             sr.transform.localScale = new Vector3(250, 150, 1);
             inputField = UIFactory.NewInputField("InputField", inputFieldHolder.transform, Vector3.zero, new Vector2(35, 6), "Type something!");
@@ -155,6 +157,7 @@ namespace ModdingCore
                     amount = 1;
                 }
                 UIControl.Main.SelectingCard.SetLife(amount);
+                UIControl.Main.SelectingCard.OriLife = amount;
             }
             else if (parts[0] == "damage" && UIControl.Main?.SelectingCard != null && parts.Length > 1)
             {
@@ -167,6 +170,7 @@ namespace ModdingCore
                     amount = 0;
                 }
                 UIControl.Main.SelectingCard.SetBaseDamage(amount);
+                UIControl.Main.SelectingCard.OriDamage = amount;
             }
             
             inputField.ActivateInputField();

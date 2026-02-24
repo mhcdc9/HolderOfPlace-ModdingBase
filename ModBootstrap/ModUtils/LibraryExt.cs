@@ -1,5 +1,6 @@
 ﻿using ADV;
 using HarmonyLib;
+using ModdingCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using Console = System.Console;
 
 namespace ModUtils
 {
@@ -24,17 +26,43 @@ namespace ModUtils
             RecruitPanel.Main.DirectRecruit(key, true);
         }
 
-        public static void MapCard(string key, bool hideAutoAttack = true)
+        public static void MapAllCards(int start, int amount, bool supressAutoAttack)
+        {
+            for (int i=0; i<amount; i++)
+            {
+                GameObject obj = Library.Main.CardPrefabs[start + i];
+                Card card = obj.GetComponent<Card>();
+                if (card != null)
+                {
+                    MapCard(card, supressAutoAttack);
+                }
+            }
+        }
+
+        public static void MapCard(string key, bool hideAutoAttack)
         {
             Card card = Library.Main.GetCard(key)?.GetComponent<Card>();
+            MapCard(card, hideAutoAttack);
+        }
+
+        public static void MapCard(Card card, bool hideAutoAttack = true)
+        {
+            
             if (card == null)
             {
                 System.Console.WriteLine("[ModUtils] Could not find card");
             }
             System.Console.WriteLine("============");
-            System.Console.WriteLine(card.GetName());
-
-            card.KeyMark.GKB();
+            System.Console.WriteLine(card.GetName() + " (" + card.Info.RenderName + ")");
+            System.Console.WriteLine(card.GetDescription());
+            System.Console.WriteLine();
+            KeyBase kb = card.KeyMark.GKB();
+            System.Console.Write("Keys: ");
+            foreach (string k in kb.Keys)
+            {
+                System.Console.Write(k + ", ");
+            }
+            System.Console.WriteLine();
 
             Targeting t = card.IniTargeting?.GetComponent<Targeting>();
             if (t != null)
@@ -68,6 +96,12 @@ namespace ModUtils
 
         public static void MapSkill(Mark_Skill skill, string prefix)
         {
+            if (skill == null)
+            {
+                System.Console.WriteLine(prefix + "[No Skill?]");
+                return;
+            }
+
             System.Console.Write(prefix + "[SK]" + skill.GetType().Name + "(" + skill.name + "): ");
             foreach(string s in skill.GKB().Keys)
             {
@@ -87,6 +121,11 @@ namespace ModUtils
 
         public static void MapStatus(Mark_Status status, string prefix)
         {
+            if (status == null)
+            {
+                System.Console.WriteLine(prefix + "[No Status?]");
+                return;
+            }
             System.Console.Write(prefix + "[ST]" + status.GetType().Name + "(" + status.name + "): ");
             foreach (string s in status.GKB().Keys)
             {
@@ -113,7 +152,7 @@ namespace ModUtils
             }
             else if (signal is Signal_AnimTrigger animTrigger)
             {
-                System.Console.Write("AnimEffect(" + (animTrigger?.AnimKey ?? "Null?") + "):");
+                System.Console.Write("AnimTrigger(" + (animTrigger?.AnimKey ?? "Null?") + "):");
             }
             else if (signal is Signal_SoundEvent sound)
             {
@@ -324,9 +363,18 @@ namespace ModUtils
                 modAssets = new GameObject("Mod Assets");
                 GameObject.DontDestroyOnLoad(modAssets);
                 modAssets.SetActive(false);
-                GatherAnimEffects();
-                //GatherAnimTriggers();
-                ModdedCard.LokiTest();
+                System.Console.WriteLine("Starting Timer...");
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                foreach (string guid in BootstrapMain.activeMods)
+                {
+                    BootstrapMain.modDictionary[guid].CreateAssets();
+                }
+                foreach (string guid in BootstrapMain.activeMods)
+                {
+                    BootstrapMain.modDictionary[guid].PostCreateAssets();
+                }
+                watch.Stop();
+                System.Console.WriteLine("Time Elapsed: " + watch.ElapsedMilliseconds + "ms");
             }
 
             ModEvents.InvokeLibraryIni();
