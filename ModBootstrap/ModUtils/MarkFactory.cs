@@ -51,6 +51,24 @@ namespace ModUtils
         public static Signal_CreateMedium NewMedium<T>(string name, out T medium, params string[] keys) where T : Medium
         {
             var signal = NewSignal<Signal_CreateMedium>(keys);
+            signal.name = name;
+            medium = signal.gameObject.AddComponent<T>();
+            KeyBase keybase2 = signal.gameObject.AddComponent<KeyBase>();
+            medium.KB = keybase2;
+            keybase2.Keys = new List<string>();
+            medium.Signals = new List<GameObject>();
+            if (medium is Medium_Explosion explosion)
+            {
+                explosion.SubSignals = new List<GameObject>();
+            }
+            signal.MediumPrefab = medium.gameObject;
+            return signal;
+        }
+        
+        public static Signal_CreateMedium_Inverse NewMediumInverse<T>(string name, out T medium, params string[] keys) where T : Medium
+        {
+            var signal = NewSignal<Signal_CreateMedium_Inverse>(keys);
+            signal.name = name;
             medium = signal.gameObject.AddComponent<T>();
             KeyBase keybase2 = signal.gameObject.AddComponent<KeyBase>();
             medium.KB = keybase2;
@@ -126,7 +144,7 @@ namespace ModUtils
             AddTo_Generic(medium.transform, medium.SubSignals, signals.Select(s => s.gameObject));
             if (!addToSubSignalsOnly)
             {
-                AddTo_Generic(medium.transform, medium.SubSignals, signals.Select(s => s.gameObject));
+                AddTo_Generic(medium.transform, medium.Signals, signals.Select(s => s.gameObject));
             }
             return medium;
         }
@@ -134,6 +152,13 @@ namespace ModUtils
         {
             AddTo_Generic(skill.transform, skill.Targetings, targetings.Select(t => t.gameObject));
             return skill;
+        }
+
+        public static Signal_Invoke NewInvoke(string skillKey, params string[] keys)
+        {
+            var invoke = NewSignal<Signal_Invoke>(keys);
+            invoke.SkillKey = "Auto";
+            return invoke;
         }
 
         public static Signal_AddSkill NewAddSkill(Mark_Skill skill, params string[] keys)
@@ -200,7 +225,7 @@ namespace ModUtils
             medium1.GKB().Keys = new List<string>();
             createMedium.MediumPrefab = medium1.gameObject;
             */
-            var mediumExplosion = NewMedium<Medium_Explosion>("SendToAllFriendly", out var explosion, TARGET_OTHER);
+            var mediumExplosion = NewMediumInverse<Medium_Explosion>("SendToAllFriendly", out var explosion, TARGET_OTHER);
             /*
             var mediumExplosion = NewSignal<Signal_CreateMedium_Inverse>(TARGET_OTHER);
             Medium_Explosion explosion = mediumExplosion.AddComponent<Medium_Explosion>();
@@ -233,6 +258,18 @@ namespace ModUtils
             */
 
             //skill.AddSignal(createMedium);
+            return skill;
+        }
+
+        public static T AddTrinketTrigger<T>(this T skill) where T : Mark_Skill
+        {
+            skill.AddSignal(NewMedium<Medium_Instant>("Trinket Trigger", out var medInstant, TARGET_OTHER));
+
+            medInstant.AddSignal(NewMediumInverse<Medium_Explosion>("Trinket Trigger II", out var explosion, TARGET_OTHER),
+                NewSignal<Signal>(TARGET_OTHER,"OnTrinket[1"));
+
+            explosion.AddKeys("TargetAllFriendly[1", "TargetDeath[1", "TargetUntargeted[1", "IgnoreSource[0");
+            explosion.AddSignal_Explosion(false, NewSignal<Signal>(TARGET_OTHER, "OnTrinket[1"));
             return skill;
         }
     }

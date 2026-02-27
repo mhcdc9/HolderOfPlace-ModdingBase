@@ -70,6 +70,7 @@ namespace ModdingCore
 
         public static bool IsInputAllowed()
         {
+            System.Console.WriteLine("[CORE] inputAllowed: " + (inputBlock == 0));
             return (inputBlock == 0);
         }
 

@@ -22,5 +22,8 @@ namespace ModUtils
         public static string DELAY_SCALE(float f) => "DelayScale[" + f;
 
         public static string SPELL => "Spell[1";
+
+        public static string PRECOMBAT_EARLY => "PreCombat_Early[1";
+        public static string PRECOMBAT => "PreCombat[1";
     }
 }

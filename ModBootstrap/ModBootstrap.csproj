@@ -382,6 +382,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Command.cs" />
     <Compile Include="Core\CommandLine.cs" />
     <Compile Include="Core\ErrorPopup.cs" />
     <Compile Include="Core\Console.cs" />

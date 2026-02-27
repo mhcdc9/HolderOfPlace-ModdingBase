@@ -176,9 +176,17 @@ namespace ModUtils
             {
                 sigMediums.MediumPrefabs.Do(g => mediums.Add(g.GetComponent<Medium>()));
             }
+            if (signal is Signal_CreateMedium_Inverse sigMediumInv)
+            {
+                mediums.Add(sigMediumInv.MediumPrefab.GetComponent<Medium>());
+            }
+            if (signal is Signal_CreateMediums_Count sigMedCount)
+            {
+                mediums.Add(sigMedCount.Medium.GetComponent<Medium>());
+            }
             foreach(Medium medium in mediums)
             {
-                System.Console.Write(prefix + "|[M]" + medium.name + ":");
+                System.Console.Write(prefix + "|[M]" + medium.GetType().Name + ":");
                 foreach (string s in medium.GKB().Keys)
                 {
                     System.Console.Write(s + ", ");
@@ -352,6 +360,29 @@ namespace ModUtils
         {
             l.Keys.Add(key);
             l.CardPrefabs.Add(obj);
+        }
+
+        public static string FindBestKey(string s)
+        {
+            string key = null;
+            if (s.Length > 1 && s[0] == '@')
+            {
+                for(int i=0; i<Library.Main.CardPrefabs.Count; i++)
+                {
+                    Card card = Library.Main.CardPrefabs[i].GetComponent<Card>();
+
+                    if (card.Info.RealName.ToLower().Replace(" ", "") == s.Substring(1).ToLower())
+                    {
+                        key = Library.Main.Keys[i];
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                key = Library.Main.Keys.FirstOrDefault(k => k.ToLower() == s.ToLower());
+            }
+            return key;
         }
 
         [HarmonyPostfix]
