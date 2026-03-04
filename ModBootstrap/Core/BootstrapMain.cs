@@ -14,6 +14,7 @@ namespace ModdingCore
 {
     public class BootstrapMain
     {
+        public static string version = "v0.0.9";
         public static string StreamingAssetPath;
         public static string modPath;
         public static string corePath;
@@ -25,6 +26,9 @@ namespace ModdingCore
 
         public static int inputBlock = 0;
 
+
+        //Config Variables
+        public static bool consoleOnStartup = true;
 
         public static Sprite GetSprite(string path)
         {
@@ -82,6 +86,10 @@ namespace ModdingCore
                 StreamingAssetPath = Application.streamingAssetsPath;
                 modPath = StreamingAssetPath + "/Mods";
                 corePath = StreamingAssetPath + "/Core";
+                if (consoleOnStartup)
+                {
+                    Console.LoadConsole();
+                }
                 StartHarmony();
                 ModMenu.CreateModMenu();
                 CommandLine.CreateCommandLineHolder();
@@ -101,7 +109,6 @@ namespace ModdingCore
             {
                 return;
             }
-            Console.LoadConsole();
             mainHarmony = new Harmony("mhcdc9.hop");
             System.Console.WriteLine("[MOD] Harmony Online!");
             mainHarmony.PatchAll(typeof(BootstrapMain).Assembly);

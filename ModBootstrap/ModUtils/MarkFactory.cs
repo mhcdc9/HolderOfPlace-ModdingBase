@@ -38,6 +38,15 @@ namespace ModUtils
             signal.KB = keyBase;
             return signal;
         }
+        public static Signal NewSignalInfo(this Signal s, string message, string copyFrom = "")
+        {
+            SignalInfo info = s.gameObject.AddComponent<SignalInfo>();
+            info.CopyFrom = copyFrom;
+            info.Message = message;
+            info.TargetText = "";
+            info.SourceText = "";
+            return s;
+        }
         public static T NewTargeting<T>(params string[] keys) where T : Targeting
         {
             GameObject obj = new GameObject("targeting");

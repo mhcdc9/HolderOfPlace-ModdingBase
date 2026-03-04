@@ -5,40 +5,58 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 
 namespace ModdingCore
 {
     public abstract class Command
     {
         public string id = "command";
-        public static void LoadInitCommands(Dictionary<string, Command> dictionary)
+        public static void LoadInitCommands()
         {
-            dictionary["recruit"] = new CommandUnits()
+            AddCommand(new CommandUnits()
             {
                 id = "recruit",
                 keyFunc = CommandUnits.Recruit
-            };
-            dictionary["map"] = new CommandUnits()
+            });
+            AddCommand(new CommandUnits()
             {
                 id = "map",
                 keyFunc = CommandUnits.Map
-            };
-            dictionary["reroll"] = new CommandUnits()
+            });
+            AddCommand(new CommandUnits()
             {
                 id = "reroll",
                 keyFunc = CommandUnits.Reroll
-            };
-            dictionary["faith"] = new CommandNumber()
+            });
+            AddCommand(new CommandNumber()
             {
                 id = "faith",
                 floatFunc = CommandNumber.Faith
-            };
-            dictionary["locus"] = new CommandNumber()
+            });
+            AddCommand(new CommandNumber()
             {
                 id = "locus",
                 floatFunc = CommandNumber.Locus
-            };
+            });
+            AddCommand(new CommandNumber()
+            {
+                id = "core",
+                floatFunc = CommandNumber.Core
+            });
+            AddCommand(new CommandCard()
+            {
+                id = "life",
+                cardFunc = CommandCard.Life
+            });
+            AddCommand(new CommandCard()
+            {
+                id = "damage",
+                cardFunc = CommandCard.Damage
+            });
         }
+
+        public static void AddCommand(Command c) => CommandLine.commands[c.id] = c;
 
         public abstract void Run(List<string> messages);
         public virtual List<string> OnValueChanged(string[] messages)
@@ -46,7 +64,7 @@ namespace ModdingCore
             return null;
         }
 
-        public int SafeParseInt(string message, int defaultValue)
+        public static int SafeParseInt(string message, int defaultValue)
         {
             if (int.TryParse(message, out var value))
             {
@@ -55,13 +73,22 @@ namespace ModdingCore
             return defaultValue;
         }
 
-        public float SafeParseFloat(string message, float defaultValue)
+        public static float SafeParseFloat(string message, float defaultValue)
         {
             if (float.TryParse(message, out var value))
             {
                 return value;
             }
             return defaultValue;
+        }
+
+        public static void Fail(string message)
+        {
+            (CommandLine.inputField.placeholder as TextMeshPro).SetText("ERROR: " + message);
+        }
+        public static void Success()
+        {
+            (CommandLine.inputField.placeholder as TextMeshPro).SetText("Command successfully executed!");
         }
 
         public class CommandUnits : Command
@@ -71,6 +98,7 @@ namespace ModdingCore
             {
                 if (Library.Main == null)
                 {
+                    Fail("Command can only be used in a run or in the codex");
                     return;
                 }
 
@@ -96,6 +124,7 @@ namespace ModdingCore
                 {
                     RecruitPanel.Main.DirectRecruit(key, true);
                 }
+                Success();
             }
 
             public static void Map(IEnumerable<string> keys)
@@ -104,6 +133,7 @@ namespace ModdingCore
                 {
                     LibraryExt.MapCard(key, true);
                 }
+                Success();
             }
 
             public static void Reroll(IEnumerable<string> keys)
@@ -121,6 +151,7 @@ namespace ModdingCore
                     ThreadControl.Main.CurrentEvent.SpecialAction("ForceRefresh");
                 }
                 //RecruitPanel.Main.NewRecruitProcess(CanSkip: true);
+                Success();
             }
         }
 
@@ -131,7 +162,7 @@ namespace ModdingCore
             {
                 if (messages.Count == 0)
                 {
-                    return;
+                    messages.Add("1");
                 }
 
                 floatFunc(SafeParseFloat(messages[0], 1));
@@ -140,11 +171,58 @@ namespace ModdingCore
             public static void Faith(float amount)
             {
                 CombatControl.Main.ChangeFate(amount);
+                Success();
             }
 
             public static void Locus(float amount)
             {
                 CombatControl.Main.ChangeMana(amount);
+                Success();
+            }
+
+            public static void Core(float amount)
+            {
+                CombatControl.Main.ChangeCoreLife(amount);
+                Success();
+            }
+        }
+
+        public class CommandCard : Command
+        {
+            public Action<List<string>, Card> cardFunc;
+            public override void Run(List<string> messages)
+            {
+                if (UIControl.Main?.SelectingCard == null)
+                {
+                    Fail("Must be hovering over a card to use command");
+                    return;
+                }
+                cardFunc(messages, UIControl.Main.SelectingCard);
+            }
+
+            public static void Life(List<string> messages,  Card card)
+            {
+                if (messages.Count==0)
+                {
+                    messages.Add("1");
+                }
+
+                float amount = SafeParseFloat(messages[0], 1);
+                card.SetMaxLife(amount);
+                card.SetLife(amount);
+                Success();
+            }
+
+            public static void Damage(List<string> messages, Card card)
+            {
+                if (messages.Count == 0)
+                {
+                    messages.Add("1");
+                }
+
+                float amount = SafeParseFloat(messages[0], 1);
+                card.SetBaseDamage(amount);
+                Success();
             }
         }
     }

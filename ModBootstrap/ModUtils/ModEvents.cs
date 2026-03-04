@@ -98,7 +98,11 @@ namespace ModUtils
             if (sandbat != null)
             {
                 Signal_ReplaceRecruitOverride signal = sandbat.GetComponentInChildren<Signal_ReplaceRecruitOverride>();
-                foreach (string key in LibraryExt.seaPool)
+                for(int i=signal.Keys.Count-1; i>=7; i--)
+                {
+                    signal.Keys.RemoveAt(i);
+                }
+                foreach (string key in LibraryExt.hollowPool)
                 {
                     signal.Keys.Add(key);
                 }
@@ -124,6 +128,7 @@ namespace ModUtils
         public static void InvokeCardGenerated(Card card)
         {
             System.Console.WriteLine("[ModEvent] CardGenerated");
+            card.name = card.name.Replace("(Clone)", "");
             OnCardGenerated?.Invoke(card);
         }
 

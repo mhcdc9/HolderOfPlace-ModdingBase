@@ -27,7 +27,7 @@ namespace ModdingCore
 
         public static void CreateCommandLineHolder()
         {
-           Command.LoadInitCommands(commands);
+           Command.LoadInitCommands();
 
             GameObject obj = new GameObject("CommandLineHolder");
             main = obj.AddComponent<CommandLine>();
@@ -101,6 +101,7 @@ namespace ModdingCore
                 autocompletes.Clear();
                 ProduceAutocomplete();
 
+                (inputField.placeholder as TextMeshPro).SetText("Type a command");
                 inputField.ActivateInputField();
                 inputField.Select();
                 inputField.SetTextWithoutNotify("");
@@ -206,119 +207,6 @@ namespace ModdingCore
             inputField.ActivateInputField();
             inputField.Select();
 
-            /*
-            if (parts.Length > 1 && parts[0] == "recruit" && RecruitPanel.Main != null)
-            {
-                string key = null;
-                if (parts[1].Length > 0 && parts[1][0] == '@')
-                {
-                    for(int i=0; i<Library.Main.CardPrefabs.Count; i++)
-                    {
-                        Card card = Library.Main.CardPrefabs[i].GetComponent<Card>();
-
-                        if (card.Info.RealName.ToLower().Replace(" ", "") == parts[1].Substring(1).ToLower())
-                        {
-                            key = Library.Main.Keys[i];
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    key = Library.Main.Keys.FirstOrDefault(s => s.ToLower() == parts[1]);
-                }
-                if (key != null)
-                {
-                    RecruitPanel.Main.DirectRecruit(key, true);
-                }
-            }
-            else if (parts.Length > 1 && parts[0] == "map" && Library.Main!= null)
-            {
-                string key = null;
-                if (parts[1].Length > 0 && parts[1][0] == '@')
-                {
-                    for (int i = 0; i < Library.Main.CardPrefabs.Count; i++)
-                    {
-                        Card card = Library.Main.CardPrefabs[i].GetComponent<Card>();
-
-                        if (card.Info.RealName.ToLower().Replace(" ", "") == parts[1].Substring(1).ToLower())
-                        {
-                            key = Library.Main.Keys[i];
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    key = Library.Main.Keys.FirstOrDefault(s => s.ToLower() == parts[1]);
-                }
-                if (key != null)
-                {
-                    LibraryExt.MapCard(key, true);
-                }
-            }
-            else if (parts[0] == "pray" && CombatControl.Main != null)
-            {
-                float amount = 1;
-                if (parts.Length > 1 && !float.TryParse(parts[1], out amount))
-                {
-                    amount = 1;
-                }
-                CombatControl.Main.ChangeFate(amount);
-            }
-            else if (parts[0] == "reroll" && RecruitPanel.Main != null)
-            {
-                List<string> validKeys = new List<string>();
-                for (int i = 1; i < parts.Length; i++)
-                {
-                    System.Console.WriteLine("word: " + parts[i]);
-                    string key = Library.Main.Keys.FirstOrDefault(s => s.ToLower() == parts[i]);
-                    if (key != null)
-                    {
-                        validKeys.Add(key);
-                        System.Console.WriteLine("Key Added: " + key);
-                    }
-                }
-                RecruitPanel.Main.ResetSlot(IgnoreLock: false);
-                if (validKeys.Count > 0)
-                {
-                    RecruitPanel.Main.RecruitOverride = validKeys;
-                    System.Console.WriteLine("Recruit Overrided: " + RecruitPanel.Main.RecruitOverride.Count);
-                }
-                RecruitPanel.Main.NewRecruitProcess(CanSkip: false);
-            }
-            else if (parts[0] == "life" && UIControl.Main?.SelectingCard != null && parts.Length > 1)
-            {
-                if (!float.TryParse(parts[1], out float amount))
-                {
-                    return;
-                }
-                if (amount <= 0)
-                {
-                    amount = 1;
-                }
-                UIControl.Main.SelectingCard.SetLife(amount);
-                UIControl.Main.SelectingCard.OriLife = amount;
-                UIControl.Main.SelectingCard.Life = amount;
-            }
-            else if (parts[0] == "damage" && UIControl.Main?.SelectingCard != null && parts.Length > 1)
-            {
-                if (!float.TryParse(parts[1], out float amount))
-                {
-                    return;
-                }
-                if (amount < 0)
-                {
-                    amount = 0;
-                }
-                UIControl.Main.SelectingCard.SetBaseDamage(amount);
-                UIControl.Main.SelectingCard.OriDamage = amount;
-                UIControl.Main.SelectingCard.BaseDamage = amount;
-            }
-            
-            inputField.ActivateInputField();
-            inputField.Select();
-            */
         }
             
     }
