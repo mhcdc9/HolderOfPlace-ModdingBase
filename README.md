@@ -7,7 +7,7 @@ The setup will require a bit of technical know-how, but the installation below s
 Creating this repository truly makes me feel like I am standing on the shoulders of giants.
 This would not have been possible without if the groundwork hasn't been already laid out.
 I would like to thank everyone who contributed to MonoMod, Harmony, and the Unity Explorer.
-I would also like to thank the creator of Holder of Place for making the game (and not using IL2CPP).
+I would also like to thank the creators of Holder of Place for making the game (and not using IL2CPP).
 
 # Downloads (v0.1.0)
 ## Latest release version: 0.1.0 (Pre-Release)
