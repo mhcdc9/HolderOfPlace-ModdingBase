@@ -18,17 +18,17 @@ namespace ModdingCore
             AddCommand(new CommandUnits()
             {
                 id = "recruit",
-                keyFunc = CommandUnits.Recruit
+                action = CommandUnits.Recruit
             });
             AddCommand(new CommandUnits()
             {
                 id = "map",
-                keyFunc = CommandUnits.Map
+                action = CommandUnits.Map
             });
             AddCommand(new CommandUnits()
             {
                 id = "reroll",
-                keyFunc = CommandUnits.Reroll
+                action = CommandUnits.Reroll
             });
             AddCommand(new CommandNumber()
             {
@@ -60,10 +60,15 @@ namespace ModdingCore
                 id = "destroy",
                 action = CommandCard.Destroy
             });
-            AddCommand(new CommandGeneric()
+            AddCommand(new CommandGeneric() //BUGGY
             {
                 id = "skip",
                 action = CommandGeneric.SkipEvent
+            });
+            AddCommand(new CommandEvent() //UNTESTED
+            {
+                id = "forceevent",
+                action = CommandEvent.ForceNext
             });
         }
 
@@ -102,9 +107,48 @@ namespace ModdingCore
             (CommandLine.inputField.placeholder as TextMeshPro).SetText("Command successfully executed!");
         }
 
+        public class CommandEvent : Command
+        {
+            public Action<string, List<string>> action;
+            public override void Run(List<string> messages)
+            {
+                if (ThreadControl.Main == null || messages.Count == 0)
+                {
+                    Fail("Run has not started");
+                    return;
+                }
+                string eventId = messages.Count > 0 ? messages[0] : "";
+                string key = ThreadControl.Main.EventKeys.FirstOrDefault(k => k.ToLower() == eventId.ToLower());
+                action(key, messages);
+            }
+
+            public override List<string> OnValueChanged(string[] messages)
+            {
+                if (messages.Length == 0 || ThreadControl.Main == null)
+                {
+                    return null;
+                }
+                string keyFrag = messages[messages.Length - 1];
+                IEnumerable<string> keys = ThreadControl.Main.EventKeys.Where(k => k.ToLower().Contains(keyFrag.ToLower()));
+                return keys.ToList();
+            }
+
+            public static void ForceNext(string key, List<string> messages)
+            {
+                if (ThreadControl.Main.GetCurrentEvent() == ThreadControl.Main.Thread[0])
+                {
+                    ThreadControl.Main.Thread[1] = ThreadControl.Main.FindEvent(key);
+                }
+                else
+                {
+                    ThreadControl.Main.Thread[0] = ThreadControl.Main.FindEvent(key);
+                }
+            }
+        }
+
         public class CommandUnits : Command
         {
-            public Action<IEnumerable<string>> keyFunc;
+            public Action<IEnumerable<string>> action;
             public override void Run(List<string> messages)
             {
                 if (Library.Main == null)
@@ -114,7 +158,7 @@ namespace ModdingCore
                 }
 
                 IEnumerable<string> keys = messages.Select(s => LibraryExt.FindBestKey(s)).Where(k => k != null);
-                keyFunc(keys);
+                action(keys);
             }
 
             public override List<string> OnValueChanged(string[] messages)
@@ -142,7 +186,7 @@ namespace ModdingCore
             {
                 foreach (string key in keys)
                 {
-                    LibraryExt.MapCard(key, true);
+                    ObjMapper.MapCard(key, true);
                 }
                 Success();
             }
@@ -259,6 +303,44 @@ namespace ModdingCore
             public static void Destroy(List<string> messages, Card card)
             {
                 card.Destroy();
+            }
+        }
+
+        public class CommandComposite : Command
+        {
+            public List<Command> subCommands;
+            public override void Run(List<string> messages)
+            {
+                if (messages.Count == 0)
+                {
+                    Fail("No subcommand provided");
+                    return;
+                }
+                string subCommandId = messages[0];
+                Command subCommand = subCommands.FirstOrDefault(c => c.id.ToLower() == subCommandId.ToLower());
+                if (subCommand == null)
+                {
+                    Fail("Subcommand not found");
+                    return;
+                }
+                subCommand.Run(messages.Skip(1).ToList());
+            }
+
+            public override List<string> OnValueChanged(string[] messages)
+            {
+                if (messages.Length == 0)
+                {
+                    return null;
+                }
+                List<string> subCommandIds = subCommands.Select(c => c.id).ToList();
+                Command currentCommand = subCommands.FirstOrDefault(c => c.id.ToLower() == messages[0].ToLower());
+                if (currentCommand != null && messages.Length > 1)
+                {
+                    return currentCommand.OnValueChanged(messages.Skip(1).ToArray());
+                }
+                subCommandIds = subCommandIds.Where(id => id.ToLower().StartsWith(messages[0].ToLower())).ToList();
+                return subCommandIds.Count > 0 ? subCommandIds : null;
+
             }
         }
     }

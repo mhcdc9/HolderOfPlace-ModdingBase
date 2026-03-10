@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace ModUtils
 {
+    [Obsolete("Signal_ColorEffect from the base game does the exact same thing, use that instead")]
     public class Signal_AnimColor : Signal
     {
         public Color color;

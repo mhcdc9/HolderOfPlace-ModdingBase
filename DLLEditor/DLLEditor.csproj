@@ -18,14 +18,8 @@
     <Reference Include="ModBootstrap">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\ModBootstrap.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.GridModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Holder of Place\HolderOfPlace_Data\Managed\UnityEngine.GridModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 

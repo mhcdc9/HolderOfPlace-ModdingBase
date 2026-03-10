@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using ADV;
 using HarmonyLib;
 using ModUtils;
 using TMPro;
@@ -14,11 +15,13 @@ namespace ModdingCore
 {
     public class BootstrapMain
     {
-        public static string version = "v0.1.0";
+        public static string version = "v0.1.1";
         public static string StreamingAssetPath;
         public static string modPath;
         public static string corePath;
         public static Harmony mainHarmony;
+
+        public static TitleScreenControl tsc = null;
 
         public static bool modsLoaded = false;
         public static Dictionary<string, HopMod> modDictionary = new Dictionary<string, HopMod>();
@@ -94,13 +97,13 @@ namespace ModdingCore
                 ModMenu.CreateModMenu();
                 CommandLine.CreateCommandLineHolder();
 
+                tsc = TitleScreenControl.Main;
                 //LoadMods();
             }
-        }
-
-        public static void OpenUnityExplorer()
-        {
-            //To-do: Update DLLEditor so I can remove this method.
+            else if (tsc != null) //If this occurs, then the source code was modified twice
+            {
+                version = "CORRUPTED VERSION DETECTED. PLEASE REINSTALL";
+            }
         }
 
         public static void StartHarmony()
