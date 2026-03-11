@@ -8,20 +8,29 @@ using System.Reflection;
 
 internal class Program
 {
+    //### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    
     //Change these paths
     static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
     static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
     
-
+    //### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    
     static void Main(string[] args)
     {
-        string bootstrapPath = outputDirectory + "\\ModBootstrap.dll";
+        //Override paths if used with automatic installation
+        if (args.Length == 2)
+        {
+            Console.WriteLine("Executing with automatic paths");
+            inputPath = args[0];
+            outputDirectory = args[1];
+        }
+        
         string outputPath = outputDirectory + "\\Assembly-CSharp.dll";
         var resolver = new DefaultAssemblyResolver();
         resolver.AddSearchDirectory(outputDirectory);
 
         AssemblyDefinition _assembly = AssemblyDefinition.ReadAssembly(inputPath, new ReaderParameters { AssemblyResolver = resolver });
-        AssemblyDefinition _mod = AssemblyDefinition.ReadAssembly( bootstrapPath, new ReaderParameters { AssemblyResolver = resolver });
 
         Console.WriteLine("Assemblies Found!");
 
@@ -91,7 +100,6 @@ internal class Program
             return false;
         }
         int index = processor.Body.Instructions.ToList().IndexOf(instruction) + 2;
-        object operand = processor.Body.Instructions[index].Operand;
         processor.InsertAfter(index, processor.Create(OpCodes.Call, GetMethodReference<ModEvents>(_assembly, nameof(ModEvents.InvokeCardGenerated), new Type[] { typeof(Card) })));
         if (obj == null)
         {
