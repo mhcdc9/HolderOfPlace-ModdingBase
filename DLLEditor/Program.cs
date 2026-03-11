@@ -8,18 +8,23 @@ using System.Reflection;
 
 internal class Program
 {
-    //Change these paths
-    //static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
-    //static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
+    //### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
     
-
+    //Change these paths
+    static string inputPath = "C:\\Users\\Michael\\Desktop\\HolderOfPlace\\Assembly-CSharp.dll";
+    static string outputDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Holder of Place\\HolderOfPlace_Data\\Managed";
+    
+    //### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+    
     static void Main(string[] args)
     {
-        if (args.Length != 2)
-            return;
-        
-        string inputPath = args[0];
-        string outputDirectory = args[1];
+        //Override paths if used with automatic installation
+        if (args.Length == 2)
+        {
+            Console.WriteLine("Executing with automatic paths");
+            inputPath = args[0];
+            outputDirectory = args[1];
+        }
         
         string outputPath = outputDirectory + "\\Assembly-CSharp.dll";
         var resolver = new DefaultAssemblyResolver();
