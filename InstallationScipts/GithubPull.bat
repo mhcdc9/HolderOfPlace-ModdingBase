@@ -17,7 +17,7 @@ if "%1" neq "skip" (
 	if !errorlevel! EQU 2 (
 		echo Download the required files manually and then run the installer.
 		pause
-		exit /b
+		exit
 	)
 )
 
@@ -34,7 +34,7 @@ for /f "tokens=1,* delims=:" %%A in ('curl -ks https://api.github.com/repos/mhcd
 if not exist catalog.txt (
 	echo Could not find the latest release catalog. Connection issue or contact developer.
 	pause
-	exit /b
+	exit
 )
 
 ::Find which files to download and download them
@@ -51,18 +51,22 @@ for /f "tokens=1,2" %%A in (catalog.txt) do (
 	)
 	if !TO_UPDATE!==0 (
 	echo %%A: Up To Date
-	) else ( if !TO_UPDATE!==1 ( echo %%A: Unknown Version. Updating...
+	) else ( if !TO_UPDATE!==1 ( 
+			echo %%A: Unknown Version. Updating...
 		) else ( 
 			echo %%A: Old Version. Updating...
 			if %%A==Installer (
-			echo A new Updater is required! Please download a new one from the GitHub repository:
-			echo https://github.com/mhcdc9/HolderOfPlace-ModdingBase
-			pause
-			exit
+				echo A new Updater is required! Please download a new one from the GitHub repository:
+				echo https://github.com/mhcdc9/HolderOfPlace-ModdingBase
+				pause
+				exit
+			)
 		)
+		::Installer will never have a download link. It must be done manually
+		if not %%A==Installer (
+			echo Downloading %%B...
+			curl -OL %%B
 		)
-		echo Downloading %%B...
-		curl -OL %%B
 		if %%A==StreamingAssets (
 			echo Unzipping [StreamingAssets.zip]...
 			::Delete an old version of streamingassets
@@ -111,8 +115,10 @@ if %NEED_TO_UNZIP% neq 0 (
 ::Everything is complete. Recording changes to avoid double-downloading
 echo Recording changes in currentCatalog... 
 move /Y catalog.txt currentCatalog.txt>nul
-echo Download Complete. Ready to install.
-pause
+echo Download Complete. Ready to update or install.
+if not "%1" == "skip" (
+	pause
+)
 endlocal
 exit /b
 

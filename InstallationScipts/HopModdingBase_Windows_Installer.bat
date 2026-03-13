@@ -5,7 +5,30 @@ echo Installing Holder of Place mod base...
 echo.
 
 :: The directory containing this script
+cd /d "%~dp0"
 set BASE_DIR=%~dp0
+set FORCE_COPY=0
+
+echo Which option would you like^?
+echo [A] Install
+echo [B] Install from scratch
+echo [C] Update only
+choice /C ABC
+set OPTION=%errorlevel%
+if %OPTION% == 2 (
+	set FORCE_COPY=1
+)
+echo %OPTION%
+
+::Pull files from GitHub (optional)  
+sleep 1
+choice /C YN /M "Would you like to look on GitHub for the latest version? (Highly recommended)"
+if %errorlevel%==1 (
+		call GithubPull.bat skip
+		sleep 1
+	)
+)
+
 
 :: Attempt to find game directory in common places
 if exist "C:\Program Files (x86)\Steam\steamapps\common\Holder of Place" set GAME_DIR="C:\Program Files (x86)\Steam\steamapps\common\Holder of Place"
@@ -122,11 +145,22 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b
 )
 
+::Update option ends prematurely
+if %OPTION%==3 (
+	echo Files successfully updated^!
+	echo.
+	pause
+	exit
+)
+
 :: Create sub-directory for input Assembly-CSharp.dll
 if not exist "%GAME_DIR%\HolderOfPlace_Data\Managed\DefaultAssembly" (
-    echo Creating sub-directory for default Assembly-CSharp.dll.
+	set FORCE_COPY=1
+	echo Creating sub-directory for default Assembly-CSharp.dll.
     mkdir "%GAME_DIR%\HolderOfPlace_Data\Managed\DefaultAssembly"
+)
 
+if %FORCE_COPY%==1 (
     :: Copy Assembly-CSharp.dll into new sub-directory
     echo Copying Assembly-CSharp.dll into sub-directory.
     copy /Y "%GAME_DIR%\HolderOfPlace_Data\Managed\Assembly-CSharp.dll" "%GAME_DIR%\HolderOfPlace_Data\Managed\DefaultAssembly\"
@@ -162,6 +196,6 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo Modding base installation finished.
-echo You can now safely delete this installation package.
+echo Keep this folder around to streamline updates.
 
 pause
