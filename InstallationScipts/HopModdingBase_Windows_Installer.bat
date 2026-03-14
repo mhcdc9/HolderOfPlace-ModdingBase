@@ -18,14 +18,11 @@ set OPTION=%errorlevel%
 if %OPTION% == 2 (
 	set FORCE_COPY=1
 )
-echo %OPTION%
 
 ::Pull files from GitHub (optional)  
-sleep 1
 choice /C YN /M "Would you like to look on GitHub for the latest version? (Highly recommended)"
 if %errorlevel%==1 (
 		call GithubPull.bat skip
-		sleep 1
 	)
 )
 
@@ -182,7 +179,7 @@ echo.
 
 
 :: Run DLLEditor to modify game files and enable modding
-echo Running dll editor.
+echo Running dll editor. Please wait a moment...
 call "%BASE_DIR%DLLEditor.exe" "%GAME_DIR%\HolderOfPlace_Data\Managed\DefaultAssembly\Assembly-CSharp.dll" "%GAME_DIR%\HolderOfPlace_Data\Managed"
 :: If error code is not equal to 0, the program threw an exception
 if %ERRORLEVEL% NEQ 0 (

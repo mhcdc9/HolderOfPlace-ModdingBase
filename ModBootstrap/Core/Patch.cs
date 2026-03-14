@@ -31,6 +31,16 @@ namespace ModdingCore
         }
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(Card), nameof(Card.Destroy), new Type[]
+        {
+            typeof(string)
+        })]
+        static void CardRemoved(Card __instance)
+        {
+            ModEvents.InvokeCardRemoved(__instance);
+        }
+
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(Event), nameof(Event.PreActivate))]
         static void EventPreActivated(Event __instance)
         {

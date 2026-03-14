@@ -52,7 +52,7 @@ namespace ModdingCore
                     inputField.MoveToEndOfLine(false, false);
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 if (autocompletes != null && autocompletes.Count > 1)
                 {
@@ -62,7 +62,7 @@ namespace ModdingCore
                     ProduceAutocomplete();
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 if (autocompletes != null && autocompletes.Count > 1)
                 {
@@ -76,7 +76,6 @@ namespace ModdingCore
 
         public void ToggleInputField()
         {
-            System.Console.WriteLine("Input Field Toggled");
             if (inputField == null)
             {
                 CreateInputField();

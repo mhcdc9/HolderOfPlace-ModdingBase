@@ -28,9 +28,9 @@ namespace ModUtils
 
         public static event CardHandler OnCardGenerated;
         public static event CardHandler OnCardRecruited;
-        //public static event CardHandler OnCardRemoved;
+        public static event CardHandler OnCardRemoved;
         //public static event CardCardHandler OnCardReplaced;
-        //public static event CardCardHandler OnTrinketAttached;
+        //public static event CardCardHandler OnAspectAttached;
 
         public static void InvokeRunStarted()
         {
@@ -168,6 +168,12 @@ namespace ModUtils
         {
             System.Console.WriteLine("[ModEvent] CardRecruited");
             OnCardRecruited?.Invoke(card);
+        }
+
+        public static void InvokeCardRemoved(Card card)
+        {
+            System.Console.WriteLine("[ModEvent] CardRemoved");
+            OnCardRemoved?.Invoke(card);
         }
     }
 }

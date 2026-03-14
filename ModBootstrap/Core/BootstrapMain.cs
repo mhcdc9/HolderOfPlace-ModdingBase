@@ -15,7 +15,7 @@ namespace ModdingCore
 {
     public class BootstrapMain
     {
-        public static string version = "v0.1.1";
+        public static string version = "v0.1.2";
         public static string StreamingAssetPath;
         public static string modPath;
         public static string corePath;

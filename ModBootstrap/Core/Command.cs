@@ -13,46 +13,55 @@ namespace ModdingCore
     public abstract class Command
     {
         public string id = "command";
+        public string args = "";
         public static void LoadInitCommands()
         {
             AddCommand(new CommandUnits()
             {
                 id = "recruit",
+                args = "<card(s)>",
                 action = CommandUnits.Recruit
             });
             AddCommand(new CommandUnits()
             {
                 id = "map",
+                args = "<card(s)>",
                 action = CommandUnits.Map
             });
             AddCommand(new CommandUnits()
             {
                 id = "reroll",
+                args = "[card(s)]",
                 action = CommandUnits.Reroll
             });
             AddCommand(new CommandNumber()
             {
                 id = "faith",
+                args = "<amount>",
                 action = CommandNumber.Faith
             });
             AddCommand(new CommandNumber()
             {
                 id = "locus",
+                args = "<amount>",
                 action = CommandNumber.Locus
             });
             AddCommand(new CommandNumber()
             {
                 id = "core",
+                args = "<amount>",
                 action = CommandNumber.Core
             });
             AddCommand(new CommandCard()
             {
                 id = "life",
+                args = "<amount>",
                 action = CommandCard.Life
             });
             AddCommand(new CommandCard()
             {
                 id = "damage",
+                args = "<amount>",
                 action = CommandCard.Damage
             });
             AddCommand(new CommandCard()
@@ -60,15 +69,20 @@ namespace ModdingCore
                 id = "destroy",
                 action = CommandCard.Destroy
             });
-            AddCommand(new CommandGeneric() //BUGGY
+            AddCommand(new CommandGeneric() 
             {
                 id = "skip",
-                action = CommandGeneric.SkipEvent
+                action = CommandGeneric.SkipEvent //BUGGY
             });
-            AddCommand(new CommandEvent() //UNTESTED
+            AddCommand(new CommandEvent()
             {
                 id = "forceevent",
+                args = "<event> [options]",
                 action = CommandEvent.ForceNext
+            });
+            AddCommand(new CommandPredict()
+            {
+                id = "predict",
             });
         }
 
@@ -118,7 +132,12 @@ namespace ModdingCore
                     return;
                 }
                 string eventId = messages.Count > 0 ? messages[0] : "";
-                string key = ThreadControl.Main.EventKeys.FirstOrDefault(k => k.ToLower() == eventId.ToLower());
+                string key = ThreadControl.Main.GetComponentsInChildren<ADV.Event>().Select(e => e.Key).FirstOrDefault(k => k.ToLower() == eventId.ToLower() || k.ToLower() == "@" + eventId.ToLower());
+                if (key == null)
+                {
+                    Fail("Event not found");
+                    return;
+                }
                 action(key, messages);
             }
 
@@ -128,20 +147,25 @@ namespace ModdingCore
                 {
                     return null;
                 }
-                string keyFrag = messages[messages.Length - 1];
-                IEnumerable<string> keys = ThreadControl.Main.EventKeys.Where(k => k.ToLower().Contains(keyFrag.ToLower()));
-                return keys.ToList();
+                if (messages.Length == 1)
+                {
+                    string keyFrag = messages[0];
+                    IEnumerable<string> keys = ThreadControl.Main.GetComponentsInChildren<ADV.Event>().Select(e => e.Key).Where(k => k.ToLower().Contains(keyFrag.ToLower()));
+                    return keys.ToList();
+                }
+                return null;
             }
 
             public static void ForceNext(string key, List<string> messages)
             {
-                if (ThreadControl.Main.GetCurrentEvent() == ThreadControl.Main.Thread[0])
+                int index = (ThreadControl.Main.GetCurrentEvent() == ThreadControl.Main.Thread[0]) ? 1 : 0;
+                if (messages.Count > 1 && messages[1].ToLower() == "add")
                 {
-                    ThreadControl.Main.Thread[1] = ThreadControl.Main.FindEvent(key);
+                    ThreadControl.Main.Thread.Insert(index, ThreadControl.Main.FindEvent(key));
                 }
                 else
                 {
-                    ThreadControl.Main.Thread[0] = ThreadControl.Main.FindEvent(key);
+                    ThreadControl.Main.Thread[index] = ThreadControl.Main.FindEvent(key);
                 }
             }
         }
@@ -275,9 +299,9 @@ namespace ModdingCore
                 action(messages, UIControl.Main.SelectingCard);
             }
 
-            public static void Life(List<string> messages,  Card card)
+            public static void Life(List<string> messages, Card card)
             {
-                if (messages.Count==0)
+                if (messages.Count == 0)
                 {
                     messages.Add("1");
                 }
@@ -341,6 +365,30 @@ namespace ModdingCore
                 subCommandIds = subCommandIds.Where(id => id.ToLower().StartsWith(messages[0].ToLower())).ToList();
                 return subCommandIds.Count > 0 ? subCommandIds : null;
 
+            }
+        }
+
+        public class CommandPredict : Command
+        {
+            public Func<List<string>, List<string>> action;
+            public override void Run(List<string> messages)
+            {
+
+            }
+
+            public override List<string> OnValueChanged(string[] messages)
+            {
+                if (ThreadControl.Main == null)
+                {
+                    return null;
+                }
+
+                List<string> events = ThreadControl.Main.Thread.Select(e => (e.Key ?? "Null?")).ToList();
+                if (events.Count > 0)
+                {
+                    events[0] = "Next: " + (events[0] ?? "Null?");
+                }
+                return events;
             }
         }
     }

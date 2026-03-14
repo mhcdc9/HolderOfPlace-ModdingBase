@@ -17,7 +17,7 @@ namespace ModdingCore
             StreamWriter writer = new StreamWriter(BootstrapMain.corePath + "/CardMaps.txt");
             foreach(GameObject obj in Library.Main.CardPrefabs)
             {
-                writer.WriteLine(MapCard(obj.GetComponent<Card>(), false));
+                writer.WriteLine(MapCard(obj.GetComponent<Card>(), true));
 
             }
         }

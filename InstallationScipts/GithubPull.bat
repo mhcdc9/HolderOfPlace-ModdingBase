@@ -68,16 +68,18 @@ for /f "tokens=1,2" %%A in (catalog.txt) do (
 			curl -OL %%B
 		)
 		if %%A==StreamingAssets (
-			echo Unzipping [StreamingAssets.zip]...
 			::Delete an old version of streamingassets
+			echo Clearing space for unzipped StreamingAssets.
 			del /Q "StreamingAssets" 2>nul
-			call :UnZipFile "%~dp0" "%~dp0StreamingAssets.zip"
+			echo Unzipping [StreamingAssets.zip]...
+			call :UnZipFile "%~dp0", "%~dp0StreamingAssets.zip"
 		)
 		if %%A==Dependencies (
-			echo Unzipping [Dependencies.zip]...
 			::Delete an old version of dependencies
+			echo Clearing space for unzipped Dependencies.
 			del /Q "Dependencies" 2>nul
-			call :UnZipFile "%~dp0" "%~dp0Dependencies.zip"
+			echo Unzipping [Dependencies.zip]...
+			call :UnZipFile "%~dp0", "%~dp0Dependencies.zip"
 		)
 	)
 )
@@ -122,7 +124,7 @@ if not "%1" == "skip" (
 endlocal
 exit /b
 
-:UnZipFile <ExtractTo> <newzipfile>
+:UnZipFile
 set vbs="%temp%\_.vbs"
 if exist %vbs% del /a /f %vbs%
 >%vbs%  echo Set fso = CreateObject("Scripting.FileSystemObject")
