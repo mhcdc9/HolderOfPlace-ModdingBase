@@ -234,46 +234,12 @@ namespace ModUtils
         public static T AddAspectTrigger<T>(this T skill) where T : Mark_Skill
         {
             skill.AddSignal(NewMedium<Medium_Instant>("AspectTrigger", out var instant, TARGET_OTHER));
-            /*
-            var createMedium = NewSignal<Signal_CreateMedium>(TARGET_OTHER);
-            Medium_Instant medium1 = createMedium.AddComponent<Medium_Instant>();
-            medium1.KB = medium1.AddComponent<KeyBase>();
-            medium1.GKB().Keys = new List<string>();
-            createMedium.MediumPrefab = medium1.gameObject;
-            */
             var mediumExplosion = NewMediumInverse<Medium_Explosion>("SendToAllFriendly", out var explosion, TARGET_OTHER);
-            /*
-            var mediumExplosion = NewSignal<Signal_CreateMedium_Inverse>(TARGET_OTHER);
-            Medium_Explosion explosion = mediumExplosion.AddComponent<Medium_Explosion>();
-            explosion.KB = explosion.AddComponent<KeyBase>();
-            explosion.GKB().Keys = new List<string>();
-            mediumExplosion.MediumPrefab = explosion.gameObject;
-            */
             explosion.AddKeys("TargetAllFriendly[1", "TargetDeath[1", "TargetUntargeted[1", "IgnoreSource[0");
-
-            /*
-            explosion.SetKey("TargetAllFriendly", 1);
-            explosion.SetKey("TargetDeath", 1);
-            explosion.SetKey("TargetUntargeted", 1);
-            explosion.SetKey("IgnoreSource", 0);
-            */
             explosion.AddSignal_Explosion(false, NewSignal<Signal>(TARGET_OTHER, "OnAspect[1", "OnTraitChange[1"));
-            /*
-            explosion.Signals = new List<GameObject> { NewSignal<Signal>(TARGET_OTHER, "OnAspect[1", "OnTraitChange[1").gameObject };
-            explosion.SubSignals = explosion.Signals;
-            explosion.Signals[0].transform.SetParent(explosion.transform);
-            */
             instant.AddSignal(mediumExplosion,
                 NewSignal<Signal>(TARGET_OTHER, "OnAdditionalTrait[1")
                 );
-            /*
-            instant.Signals = new List<GameObject> { mediumExplosion.gameObject,
-                NewSignal<Signal>(TARGET_OTHER, "OnAdditionalTrait[1").gameObject};
-            instant.Signals[0].transform.SetParent(instant.transform);
-            instant.Signals[1].transform.SetParent(instant.transform);
-            */
-
-            //skill.AddSignal(createMedium);
             return skill;
         }
 

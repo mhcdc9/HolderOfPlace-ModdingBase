@@ -34,6 +34,12 @@ namespace ModdingCore
                 args = "[card(s)]",
                 action = CommandUnits.Reroll
             });
+            AddCommand(new CommandUnits()
+            {
+                id = "trait",
+                args = "<card(s)>",
+                action = CommandUnits.AddTrait
+            });
             AddCommand(new CommandNumber()
             {
                 id = "faith",
@@ -230,6 +236,20 @@ namespace ModdingCore
                     ThreadControl.Main.CurrentEvent.SpecialAction("ForceRefresh");
                 }
                 //RecruitPanel.Main.NewRecruitProcess(CanSkip: true);
+                Success();
+            }
+
+            public static void AddTrait(IEnumerable<string> keys)
+            {
+                if (UIControl.Main?.SelectingCard == null)
+                {
+                    Fail("Must be hovering over a card to use command");
+                    return;
+                }
+                foreach (string key in keys)
+                {
+                    UIControl.Main.SelectingCard.AddTrait(key);
+                }
                 Success();
             }
         }

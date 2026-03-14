@@ -388,6 +388,7 @@
     <Compile Include="Core\Console.cs" />
     <Compile Include="Core\BootstrapMain.cs" />
     <Compile Include="Core\ObjMapper.cs" />
+    <Compile Include="ModUtils\CardExt.cs" />
     <Compile Include="ModUtils\HopMod.cs" />
     <Compile Include="ModUtils\KeyLib.cs" />
     <Compile Include="ModUtils\LibraryExt.cs" />

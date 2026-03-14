@@ -20,6 +20,9 @@ namespace ModUtils
 
         public abstract string Description { get; }
 
+        public virtual bool AppearAsRelic => false;
+        public virtual float CorruptionLevel => 1f;
+
         public Sprite icon;
 
         public HopMod(string path)
