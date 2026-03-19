@@ -3,23 +3,28 @@ This repository is an attempt to add a modding framework to the game "Holder of 
 It consists of two parts: a DLLEditor that injects entry points into the source code and code that uses these entry points to establish a DLL reading framework.
 The setup will require a bit of technical know-how, but the installation below should smooth out the rough patches.
 
+After successfully installing the modding base, please see [this repository's wiki](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/wiki) for more information or the [sister repository](https://github.com/mhcdc9/HolderOfPlace-Mods) for some example mods.
+
 # Credits
 Creating this repository truly makes me feel like I am standing on the shoulders of giants.
 This would not have been possible without if the groundwork hasn't been already laid out.
 I would like to thank everyone who contributed to MonoMod, Harmony, and the Unity Explorer.
 I would also like to thank the creators of Holder of Place for making the game (and not using IL2CPP).
 
-# Downloads (v0.1.0)
-## Latest release version: 0.1.0 (Pre-Release)
+# Downloads (v0.1.3)
+## Latest release version: 0.1.3
 - [See all releases](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases)
+- [Installer/Updater](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.3/HopModding_Windows_Installer.zip)
 - [Dependencies (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/Dependencies.zip)
 - [StreamingAssets Folder (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/StreamingAssets.zip)
-- [ModBootstrap.dll (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/ModBootstrap.dll)
+- [ModBootstrap.dll (updated 03/14/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.3/ModBootstrap.dll)
 - [Source Code (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/archive/refs/tags/v0.1.0.zip)
 - Example mods are located in [another repository](https://github.com/mhcdc9/HolderOfPlace-Mods/tree/master)
 
+# Installer
+If you want a quick installation (and quick future updates), download and extract the [installer](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.3/HopModding_Windows_Installer.zip) and run the file named "HopModdingBase_Windows_Installer.bat". For a more careful installation, please read further down.
 
-# Installation
+# Manual Installation
 
 > [!Note]
 > This section explains in detail how to set everything with essentially zero coding know-how. For those more well-versed, click the drop-down below for a very condensed summary. 
@@ -182,6 +187,6 @@ Congratulations! You have successfully enabled modding for Holder of Place. Here
 ### Debug Log
 That extra window that opened up with `Hello World` shows you the debug messages that occur as you play the game. Useful for developing mods and, umm, debugging.
 ### Command Line
-Press ~ and a prompt appears for you to type commands. I'll leave it to you to figure out how these commands work. These are made for the purpose of testing things out.
+Press ~ and a prompt appears for you to type commands. I'll leave it to you to figure out how these commands work. These are made for the purpose of testing things out. See the wiki page for more details: [Command Line and In‐game Inspection](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/wiki/Command-Line-and-In%E2%80%90game-Inspection).
 ### Mod Menu
-If you go to settings, you will also find a gray rectangle on the right side of the screen. Once you installed mods, you can cycle through mods and turn toggle them on/off. How do you add mods? If you place a mod's `.dll` file in a folder (maybe with an icon), and place that folder in `...\StreamingAssets\Mods`, it will show up in the game the next time you play (don't forget to turn on the mod!). See the [other repository](https://github.com/mhcdc9/HolderOfPlace-Mods/tree/master) for some example mods.
+If you go to settings, you will also find a gray rectangle on the right side of the screen. Once you installed mods, you can cycle through mods and turn toggle them on/off. How do you add mods? If you place a mod's `.dll` file in a folder (maybe with an icon), and place that folder in `...\StreamingAssets\Mods`, it will show up in the game the next time you play (don't forget to turn on the mod!) (If you need further details, see [the wiki page](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/wiki/Downloading,-Installing,-and-Updating-Mods). See the [other repository](https://github.com/mhcdc9/HolderOfPlace-Mods/tree/master) for some example mods.
