@@ -13,8 +13,6 @@ namespace ModdingCore
     {
         private const uint StdOutputHandle = 4294967285u;
 
-        private const int MY_CODE_PAGE = 437;
-
         private const uint GENERIC_WRITE = 1073741824u;
 
         private const uint FILE_SHARE_WRITE = 2u;
@@ -50,6 +48,11 @@ namespace ModdingCore
             System.Console.WriteLine("Hello world!");
             Application.logMessageReceived += OnApplicationOnlogMessageReceived;
             System.Console.WriteLine(Application.streamingAssetsPath);
+        }
+
+        internal static void Log(string message)
+        {
+            System.Console.WriteLine(message);
         }
 
         private static void OnApplicationOnlogMessageReceived(string logString, string stackTrace, LogType type)

@@ -389,6 +389,7 @@
     <Compile Include="Core\BootstrapMain.cs" />
     <Compile Include="Core\ObjMapper.cs" />
     <Compile Include="ModUtils\CardExt.cs" />
+    <Compile Include="ModUtils\ConfigAttribute.cs" />
     <Compile Include="ModUtils\HopMod.cs" />
     <Compile Include="ModUtils\KeyLib.cs" />
     <Compile Include="ModUtils\LibraryExt.cs" />
@@ -400,7 +401,6 @@
     <Compile Include="ModUtils\UIButton_Generic.cs" />
     <Compile Include="ModUtils\UIFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ModUtils\Signal_AnimColor.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

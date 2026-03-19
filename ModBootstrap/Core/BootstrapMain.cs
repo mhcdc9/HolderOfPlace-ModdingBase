@@ -15,7 +15,7 @@ namespace ModdingCore
 {
     public class BootstrapMain
     {
-        public static string version = "v0.1.3";
+        public static string version = "v0.2.0";
         public static string StreamingAssetPath;
         public static string modPath;
         public static string corePath;
@@ -31,6 +31,7 @@ namespace ModdingCore
 
 
         //Config Variables
+        [Config("consoleOnStartup", true)]
         public static bool consoleOnStartup = true;
 
         public static Sprite GetSprite(string path)
@@ -48,7 +49,7 @@ namespace ModdingCore
             string fullPath = path;
             if (!File.Exists(fullPath))
             {
-                System.Console.WriteLine("[Mod] Could not find file at path: " + path);
+                System.Console.WriteLine("[Core] Could not find file at path: " + path);
                 return null;
             }
             byte[] bytes = File.ReadAllBytes(fullPath);
@@ -88,6 +89,7 @@ namespace ModdingCore
                 StreamingAssetPath = Application.streamingAssetsPath;
                 modPath = StreamingAssetPath + "/Mods";
                 corePath = StreamingAssetPath + "/Core";
+                ConfigAttribute.LoadConfigs(typeof(BootstrapMain), null, corePath + "/config.cfg");
                 if (consoleOnStartup)
                 {
                     Console.LoadConsole();
@@ -112,9 +114,14 @@ namespace ModdingCore
             {
                 return;
             }
-            mainHarmony = new Harmony("mhcdc9.hop");
-            System.Console.WriteLine("[MOD] Harmony Online!");
+            mainHarmony = new Harmony("mainHarmony");
+            DebugLog("Core", "Harmony Online!");
             mainHarmony.PatchAll(typeof(BootstrapMain).Assembly);
+        }
+
+        public static void DebugLog(string prefix, string message)
+        {
+            Console.Log("[" + prefix + "] " + message);
         }
 
         public static void LoadMods()

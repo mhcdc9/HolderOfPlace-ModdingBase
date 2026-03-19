@@ -1,4 +1,5 @@
-﻿using ModdingCore;
+﻿using HarmonyLib;
+using ModdingCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace ModUtils
 {
     public abstract class HopMod
     {
+        private Harmony harmony;
+
         public string modPath;
         public bool enabled;
 
@@ -25,11 +28,14 @@ namespace ModUtils
 
         public Sprite icon;
 
+        private static int channelID = 1000;
+
         public HopMod(string path)
         {
             modPath = path;
             icon = BootstrapMain.GetSprite(modPath + "/icon.png");
-            BootstrapMain.mainHarmony.PatchAll(this.GetType().Assembly);
+            ConfigAttribute.LoadConfigs(GetType(), this, modPath + "/config.cfg");
+            
         }
 
         protected internal virtual void CreateAssets()
@@ -44,7 +50,10 @@ namespace ModUtils
 
         protected internal virtual void SendData(string guid, List<object> data)
         {
-
+            if (BootstrapMain.modDictionary.ContainsKey(guid))
+            {
+                BootstrapMain.modDictionary[guid].ReceiveData(Guid, data);
+            }
         }
 
         protected internal virtual void ReceiveData(string guid, List<object> data)
@@ -54,12 +63,26 @@ namespace ModUtils
 
         protected internal virtual void OnEnable()
         {
+            if (harmony == null)
+            {
+                harmony = Harmony.CreateAndPatchAll(this.GetType().Assembly, Guid);
+            }
+            else
+            {
+                harmony.PatchAll();
+            }
             enabled = true;
         }
 
         protected internal virtual void OnDisable()
         {
+            harmony.UnpatchSelf();
             enabled = false;
+        }
+
+        public static int NewChannelID()
+        {
+            return channelID++;
         }
     }
 }

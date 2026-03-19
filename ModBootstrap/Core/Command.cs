@@ -3,6 +3,7 @@ using ModUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TMPro;
@@ -80,16 +81,12 @@ namespace ModdingCore
                 id = "skip",
                 action = CommandGeneric.SkipEvent //BUGGY
             });
-            AddCommand(new CommandEvent()
-            {
-                id = "forceevent",
-                args = "<event> [options]",
-                action = CommandEvent.ForceNext
-            });
+            AddCommand(new CommandEvent("forceevent", "<event> [options]", CommandEvent.ForceNext));
             AddCommand(new CommandPredict()
             {
                 id = "predict",
             });
+            AddCommand(new CommandConfig());
         }
 
         public static void AddCommand(Command c) => CommandLine.commands[c.id] = c;
@@ -130,6 +127,15 @@ namespace ModdingCore
         public class CommandEvent : Command
         {
             public Action<string, List<string>> action;
+
+            public CommandEvent() { }
+            public CommandEvent(string id, string args, Action<string, List<string>> action)
+            {
+                this.id = id;
+                this.args = args;
+                this.action = action;
+            }
+
             public override void Run(List<string> messages)
             {
                 if (ThreadControl.Main == null || messages.Count == 0)
@@ -409,6 +415,116 @@ namespace ModdingCore
                     events[0] = "Next: " + (events[0] ?? "Null?");
                 }
                 return events;
+            }
+        }
+
+        public class CommandConfig : Command
+        {
+            public CommandConfig()
+            {
+                id = "config";
+                args = "<mod/core> <config name> <value>";
+            }
+
+            public override void Run(List<string> messages)
+            {
+                if (messages.Count < 3)
+                {
+                    Fail("Not enough arguments");
+                    return;
+                }
+
+                if (messages[0].ToLower() == "core")
+                {
+                    if (ChangeConfig(typeof(BootstrapMain), null, messages[1], messages[2]))
+                    {
+                        ConfigAttribute.SaveConfigs(typeof(BootstrapMain), null, BootstrapMain.corePath + "/config.cfg");
+                    }
+                }
+                else
+                {
+                    string guid = BootstrapMain.modDictionary.Keys.FirstOrDefault(k => k.ToLower() == messages[0].ToLower());
+                    if (guid != null)
+                    {
+                        HopMod mod = BootstrapMain.modDictionary[guid];
+                        if (ChangeConfig(mod.GetType(), mod, messages[1], messages[2]))
+                        {
+                            ConfigAttribute.SaveConfigs(mod.GetType(), mod, mod.modPath + "/config.cfg");
+                        }
+                    }
+                    else
+                    {
+                        Fail("Mod not found");
+                        return;
+                    }
+                }
+            }
+
+            public override List<string> OnValueChanged(string[] messages)
+            {
+                if (messages.Length == 1)
+                {
+                    List<string> mods = BootstrapMain.modDictionary.Keys.ToList();
+                    mods.Insert(0, "core");
+                    return mods.Where(m => m.ToLower().Contains(messages[0].ToLower())).ToList();
+                }
+                else if (messages.Length == 2)
+                {
+                    string modId = messages[0].ToLower();
+                    if (modId.ToLower() == "core")
+                    {
+                        return FindConfigNames(typeof(BootstrapMain));
+                    }
+                    else
+                    {
+                        string guid = BootstrapMain.modDictionary.Keys.FirstOrDefault(k => k.ToLower() == modId.ToLower());
+                        if (guid != null)
+                        {
+                            HopMod mod = BootstrapMain.modDictionary[guid];
+                            return FindConfigNames(mod.GetType());
+                        }
+                    }
+                }
+                return null;
+            }
+
+            public List<string> FindConfigNames(Type type)
+            {
+                List<string> list = new List<string>();
+                foreach (var field in type.GetFields())
+                {
+                    if (field.GetCustomAttributes(typeof(ConfigAttribute), true).FirstOrDefault() != null)
+                    {
+                        list.Add(field.Name);
+                    }
+                }
+                return list;
+            }
+
+            public bool ChangeConfig(Type type, object instance, string name, string value)
+            {
+                FieldInfo info = type.GetFields().FirstOrDefault(f => f.Name.ToLower() == name);
+                if (info == null)
+                {
+                    Fail(name + " not found");
+                    return false;
+                }
+
+                if (info.IsStatic)
+                {
+                    instance = null;
+                }
+
+                if (ConfigAttribute.TrySet(info, instance, value))
+                {
+                    Success();
+                    return true;
+                }
+                else
+                {
+                    Fail("Error: Type mismatch");
+                }
+                return false;
             }
         }
     }
