@@ -54,6 +54,7 @@ namespace ModdingCore
             ModEvents.InvokeEventActivated(__instance);
         }
 
+        /*
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecruitPanel), nameof(RecruitPanel.DirectRecruit), new Type[]
         {
@@ -62,9 +63,61 @@ namespace ModdingCore
         })]
         static void CardRecruited(RecruitPanel __instance, Card __result)
         {
-            ModEvents.InvokeCardRecruited(__result);
+            if (__result != null)
+            {
+                ModEvents.InvokeCardRecruited(__result);
+            }
         }
-        
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(RecruitPanel), nameof(RecruitPanel.DirectRecruit), new Type[]
+        {
+            typeof(string),
+            typeof(Card),
+            typeof(bool)
+        })]
+        static void CardRecruited2(RecruitPanel __instance, Card __result)
+        {
+            if (__result != null)
+            {
+                ModEvents.InvokeCardRecruited(__result);
+            }
+        }
+        */
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Card), nameof(Card.InvokeSkill), new Type[]
+        {
+            typeof(float),
+            typeof(bool),
+            typeof(bool)
+        })]
+        static void CardRecruited(Card __instance, float Channel)
+        {
+            if (__instance == null)
+            {
+                return;
+            }
+            if (Channel == 0)
+            {
+                ModEvents.InvokeCardRecruited(__instance);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Card), nameof(Card.UseSkill), new Type[]
+        {
+            typeof(Mark_Skill),
+            typeof(Card)
+        })]
+        static void SkillUsed(Card __instance, Mark_Skill Skill, Card Target)
+        {
+            if (Skill != null && Skill.GetKey("Spell") == 1)
+            {
+                ModEvents.InvokeSpellInvoked(__instance, Target, Skill);
+            }
+        }
+
     }
 
     [HarmonyPatch(typeof(Event_FR_RecruitII), nameof(Event_FR_RecruitII.IniRecruit), new Type[]

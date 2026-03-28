@@ -254,5 +254,57 @@ namespace ModUtils
             explosion.AddSignal_Explosion(false, NewSignal<Signal>(TARGET_OTHER, "OnTrinket[1"));
             return skill;
         }
+
+        public static Signal[] Effect_AddFaith(float value=1, float bonusDelay = 0)
+        {
+            Signal[] signals = new Signal[]
+            {
+                NewSignal<Signal_FateChange>(TARGET_OTHER, VALUE(value), "NumberEffect[1"),
+                NewAnimEffect("AE_Faith", TARGET_SELF),
+                NewSignal<Signal_AddActingDelay>(TARGET_SELF, DELAY_SCALE(0.5f)),
+                NewSound("Faith",TARGET_SELF)
+            };
+            if (bonusDelay != 0)
+            {
+                signals[0].AddKey(DELAY(bonusDelay));
+                signals[2].AddKey(DELAY_II(bonusDelay));
+            }
+            return signals;
+        }
+
+        public static Signal[] Effect_BuffStats(float life, float damage, bool permanent, bool self = true, float bonusDelay = 0)
+        {
+            string colorKey = "";
+            Mark_Status_StatMod statMod = NewMark<Mark_Status_StatMod>("Mod", PERM(permanent), BUFF);
+            if (life > 0)
+            {
+                statMod.SetKey("AddLife",life);
+                statMod.SetKey("AutoHeal",1);
+                colorKey = "AE_GreenBuff";
+                if (damage > 0)
+                {
+                    statMod.SetKey("AddDamage",damage);
+                    colorKey = "AE_YellowBuff";
+                }
+            }
+            else if (damage > 0)
+            {
+                statMod.SetKey("AddDamage", damage);
+                colorKey = "AE_RedBuff";
+            }
+
+            List<Signal> signals = new List<Signal>
+            {
+                NewAddStatus(statMod, TARGET(self)),
+                NewAnimEffect(colorKey, TARGET_OTHER)
+            };
+            if (!self)
+            {
+                signals.Add(NewAnimEffect(colorKey + "_Empty", TARGET_SELF, "Priority[-1"));
+            }
+            signals.Add(NewSignal<Signal_AddActingDelay>(TARGET_SELF, DELAY_SCALE(0.5f)));
+            signals.Add(NewSound("Buff", TARGET_SELF));
+            return signals.ToArray();
+        }
     }
 }

@@ -258,6 +258,7 @@ namespace ModUtils
                 GameObject.DontDestroyOnLoad(modAssets);
                 modAssets.SetActive(false);
                 System.Console.WriteLine("Starting Timer...");
+                GatherAnimEffects();
                 var watch = System.Diagnostics.Stopwatch.StartNew();
                 foreach (string guid in BootstrapMain.activeMods)
                 {

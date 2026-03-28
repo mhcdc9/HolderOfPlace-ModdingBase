@@ -38,6 +38,16 @@ namespace ModUtils
             
         }
 
+        public Sprite GetImage(string path)
+        {
+            return BootstrapMain.GetSprite(modPath + "/Images/" + path);
+        }
+
+        public virtual void DebugLog(string prefix, string message)
+        {
+            ModdingCore.Console.Log("[" + prefix + "] " + message);
+        }
+
         protected internal virtual void CreateAssets()
         {
 

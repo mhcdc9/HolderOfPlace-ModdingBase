@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GameObject = UnityEngine.GameObject;
 using UnityEngine.Events;
+using ModdingCore;
 
 namespace ModUtils
 {
@@ -14,6 +15,8 @@ namespace ModUtils
     {
         public delegate void CardHandler(Card card);
         public delegate void CardCardHandler(Card oldCard, Card newCard);
+        public delegate void CardMarkHandler(Card card, Mark mark);
+        public delegate void CardCardSkillHandler(Card card1, Card card2, Mark_Skill skill);
 
         public static event UnityAction OnRunStarted;
         //public static event UnityAction OnRunFinished;
@@ -30,7 +33,9 @@ namespace ModUtils
         public static event CardHandler OnCardRecruited;
         public static event CardHandler OnCardRemoved;
         //public static event CardCardHandler OnCardReplaced;
-        //public static event CardCardHandler OnAspectAttached;
+
+        public static event CardCardSkillHandler OnSpellInvoked;
+        //public static event CardMarkHandler OnTraitAdded;
 
         public static void InvokeRunStarted()
         {
@@ -174,6 +179,12 @@ namespace ModUtils
         {
             System.Console.WriteLine("[ModEvent] CardRemoved");
             OnCardRemoved?.Invoke(card);
+        }
+
+        public static void InvokeSpellInvoked(Card source, Card target, Mark_Skill skill)
+        {
+            ModdingCore.Console.Log("[ModEvent] SpellInvoked");
+            OnSpellInvoked?.Invoke(source, target, skill);
         }
     }
 }
