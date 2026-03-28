@@ -11,13 +11,13 @@ This would not have been possible without if the groundwork hasn't been already 
 I would like to thank everyone who contributed to MonoMod, Harmony, and the Unity Explorer.
 I would also like to thank the creators of Holder of Place for making the game (and not using IL2CPP).
 
-# Downloads (v0.1.3)
-## Latest release version: 0.1.3
+# Downloads (v0.2.1)
+## Latest release version: 0.2.1
 - [See all releases](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases)
 - [Installer/Updater](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.3/HopModding_Windows_Installer.zip)
 - [Dependencies (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/Dependencies.zip)
 - [StreamingAssets Folder (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.0/StreamingAssets.zip)
-- [ModBootstrap.dll (updated 03/14/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.1.3/ModBootstrap.dll)
+- [ModBootstrap.dll (updated 03/28/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/releases/download/v0.2.1/ModBootstrap.dll)
 - [Source Code (updated 03/07/26)](https://github.com/mhcdc9/HolderOfPlace-ModdingBase/archive/refs/tags/v0.1.0.zip)
 - Example mods are located in [another repository](https://github.com/mhcdc9/HolderOfPlace-Mods/tree/master)
 
