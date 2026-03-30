@@ -25,6 +25,10 @@ namespace ModdingCore
 
         public List<string> autocompletes = new List<string>();
 
+        public List<string> lastCommands = new List<string>();
+        public int lastCommandIndex = -1;
+        public bool issueLastCommands = false;
+
         public static void CreateCommandLineHolder()
         {
            Command.LoadInitCommands();
@@ -54,7 +58,12 @@ namespace ModdingCore
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                if (autocompletes != null && autocompletes.Count > 1)
+                if (issueLastCommands && lastCommandIndex != -1)
+                {
+                    lastCommandIndex--;
+                    inputField.SetTextWithoutNotify(lastCommandIndex >= 0 ? lastCommands[lastCommandIndex] : "");
+                }
+                else if (autocompletes != null && autocompletes.Count > 1)
                 {
                     string s = autocompletes[0];
                     autocompletes.RemoveAt(0);
@@ -64,7 +73,12 @@ namespace ModdingCore
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                if (autocompletes != null && autocompletes.Count > 1)
+                if (issueLastCommands && lastCommandIndex != lastCommands.Count-1)
+                {
+                    lastCommandIndex++;
+                    inputField.SetTextWithoutNotify(lastCommands[lastCommandIndex]);
+                }
+                else if (autocompletes != null && autocompletes.Count > 1)
                 {
                     string s = autocompletes[autocompletes.Count-1];
                     autocompletes.RemoveAt(autocompletes.Count - 1);
@@ -139,7 +153,12 @@ namespace ModdingCore
         public void OnValueChanged(string s)
         {
             string[] parts = s.Split(' ');
-            if (parts.Length == 1)
+            if (parts.Length == 0)
+            {
+                lastCommandIndex = -1;
+                issueLastCommands = lastCommands.Count > 0;
+            }
+            else if (parts.Length == 1)
             {
                 autocompletes = commands.Keys.Where(k => k.StartsWith(parts[0])).ToList();
             }
@@ -190,7 +209,10 @@ namespace ModdingCore
 
         public void IssueCommand(string command)
         {
+            lastCommands.Insert(0,command);
             inputField.SetTextWithoutNotify("");
+            lastCommandIndex = -1;
+            issueLastCommands = true;
             autocompletes.Clear();
             ProduceAutocomplete();
             System.Console.WriteLine("[Command] " + command);

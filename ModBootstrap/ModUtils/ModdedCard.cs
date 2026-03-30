@@ -24,11 +24,15 @@ namespace ModUtils
     public class ModdedCard : MonoBehaviour
     {
         
-
+        //Things from Card and CardInfo
         public Card _card;
         public CardInfo _cardInfo;
         public Transform _skillParent;
         public Transform _statusParent;
+
+        //Thimgs to help with Card and CardInfo
+        public string genericDesc = "";
+        public bool hasNobleVersion = false;
 
         public HopMod mod;
         public string dirPath;
@@ -52,6 +56,7 @@ namespace ModUtils
                 default:
                 case CardType.Follower:
                     card = Instantiate(Library.Main.GetCard("Militia"), LibraryExt.modAssets.transform).GetComponent<Card>();
+                    card.KeyMark.KB.Keys.Remove("NoTrait[0");
                     break;
                 case CardType.PassiveFollower:
                     card = Instantiate(Library.Main.GetCard("Obelisk"), LibraryExt.modAssets.transform).GetComponent<Card>();
@@ -60,6 +65,11 @@ namespace ModUtils
                         Destroy(card.IniSkills[i]);
                     }
                     card.IniSkills.Clear();
+                    for(int i = card.AddConditions.Count-1; i>=0;i--)
+                    {
+                        Destroy(card.AddConditions[i]);
+                    }
+                    card.AddConditions.Clear();
                     break;
                 case CardType.Aspect:
                     card = Instantiate(Library.Main.GetCard("Sacrificial"), LibraryExt.modAssets.transform).GetComponent<Card>();
@@ -68,6 +78,11 @@ namespace ModUtils
                         Destroy(card.IniSkills[i]);
                     }
                     card.IniSkills.Clear();
+                    for (int i = card.AddConditions.Count - 1; i >= 0; i--)
+                    {
+                        Destroy(card.AddConditions[i]);
+                    }
+                    card.AddConditions.Clear();
                     break;
                 case CardType.Trinket:
                     card = Instantiate(Library.Main.GetCard("Refresh"), LibraryExt.modAssets.transform).GetComponent<Card>();
@@ -107,6 +122,41 @@ namespace ModUtils
             _statusParent = transform.Find("Status");
         }
 
+        internal void Ennoble()
+        {
+            foreach(NobleKey noble in GetComponentsInChildren<NobleKey>())
+            {
+                noble.Ennoble();
+            }
+            string newDesc = genericDesc;
+            int lastOpenBracket = -1;
+            for(int i=0; i<newDesc.Length; i++)
+            {
+                if (newDesc[i] == '{')
+                {
+                    lastOpenBracket = i;
+                }
+                if (newDesc[i] == '}' && lastOpenBracket > -1)
+                {
+                    string substring = newDesc.Substring(lastOpenBracket + 1, i - lastOpenBracket);
+                    if (int.TryParse(substring, out int result))
+                    {
+                        result++;
+                        newDesc = newDesc.Replace("{" + substring + "}", result.ToString());
+                    }
+                    else
+                    {
+                        newDesc = newDesc.Replace("{" + substring + "}", substring);
+                    }
+                    i -= 2;
+                    lastOpenBracket = -1;
+                }
+            }
+            _cardInfo.Description = newDesc;
+            _card.KeyMark.GKB().Keys.Add("OriID[" + _cardInfo.Name);
+            _cardInfo.Name = _cardInfo.Name + "Noble";
+        }
+
         public ModdedCard SetName(string name, string key)
         {
             _cardInfo.RenderName = name;
@@ -119,7 +169,16 @@ namespace ModUtils
 
         public ModdedCard SetDesc(string desc)
         {
-            _cardInfo.Description = desc;
+            genericDesc = desc;
+            if (genericDesc.Contains("{"))
+            {
+                hasNobleVersion = true;
+                _cardInfo.Description = desc.Replace("{", "").Replace("}", "");
+            }
+            else
+            {
+                _cardInfo.Description = desc;
+            }
             return this;
         }
 

@@ -58,7 +58,7 @@ namespace ModdingCore
         {
             if (skill == null)
             {
-                return "[NoSkill?]";
+                return prefix + "[NoSkill?]\n";
             }
 
             string output = prefix + "[SK]" + skill.GetType().Name + "(" + skill.name + "): ";
@@ -85,6 +85,14 @@ namespace ModdingCore
         public static string MapConditions(Condition c, string prefix)
         {
             string output = prefix + "[C]" + c.GetType().Name + ": ";
+            if (c is Condition_Key k)
+            {
+                output = prefix + "[C] C_Key(" + (k.KeyName ?? "Null?") + "): ";  
+            }
+            else if (c is Condition_PassValue v)
+            {
+                output = prefix + "[C] C_PassValue(" + (v.Key ?? "Null?") + "): ";
+            }
             output += MapKeys(c.GKB()) + "\n";
             return output;
         }
@@ -93,7 +101,7 @@ namespace ModdingCore
         {
             if (status == null)
             {
-                return "[NoStatus?]";
+                return prefix + "[NoStatus?]\n";
             }
             string output = prefix + "[ST]" + status.GetType().Name + "(" + status.name + "): ";
             output += MapKeys(status.GKB()) + "\n";
@@ -133,6 +141,12 @@ namespace ModdingCore
                 output +=signal.GetType().Name + ": ";
             }
             output += MapKeys(signal.GKB()) + "\n";
+            SignalInfo info = signal.GetComponent<SignalInfo>();
+            if (info != null)
+            {
+                output += prefix + "|[I] " + (info.Message ?? "Null?") + "\n";
+            }
+
             List<Medium> mediums = new List<Medium>();
             if (signal is Signal_CreateMedium sigMedium)
             {
@@ -156,8 +170,12 @@ namespace ModdingCore
             }
             foreach (Medium medium in mediums)
             {
-                output +=prefix + "|[M]" + medium.GetType().Name + ":";
+                output +=prefix + "|[M]" + medium.GetType().Name + ": ";
                 output += MapKeys(medium.GKB()) + "\n";
+                if (medium.GetKey("AddCondition") > 0)
+                {
+                    medium.GetComponentsInChildren<Condition>().Select(c => c.GetComponent<Condition>()).Where(s => s != null).Do(c => output += MapConditions(c, prefix + "||"));
+                }
                 IEnumerable<Signal> signals = medium.Signals.Select(m => m.GetComponent<Signal>()).Where(s => s != null);
                 foreach (Signal sig in signals)
                 {

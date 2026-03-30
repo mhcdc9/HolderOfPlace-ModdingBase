@@ -257,6 +257,7 @@ namespace ModUtils
                 modAssets = new GameObject("Mod Assets");
                 GameObject.DontDestroyOnLoad(modAssets);
                 modAssets.SetActive(false);
+            }
                 System.Console.WriteLine("Starting Timer...");
                 GatherAnimEffects();
                 var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -270,7 +271,6 @@ namespace ModUtils
                 }
                 watch.Stop();
                 System.Console.WriteLine("Time Elapsed: " + watch.ElapsedMilliseconds + "ms");
-            }
 
             ModEvents.InvokeLibraryIni();
 

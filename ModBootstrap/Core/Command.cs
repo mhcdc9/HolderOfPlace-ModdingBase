@@ -307,7 +307,7 @@ namespace ModdingCore
 
             public static void Core(float amount)
             {
-                CombatControl.Main.SetCoreLife(amount);
+                CombatControl.Main.GlobalCard.ChangeKey("CoreHealth", amount);
                 Success();
             }
         }

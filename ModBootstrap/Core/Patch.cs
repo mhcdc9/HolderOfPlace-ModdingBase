@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using ADV;
 using ModUtils;
+using UnityEngine;
+using Event = ADV.Event;
 
 namespace ModdingCore
 {
@@ -54,36 +56,33 @@ namespace ModdingCore
             ModEvents.InvokeEventActivated(__instance);
         }
 
-        /*
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(RecruitPanel), nameof(RecruitPanel.DirectRecruit), new Type[]
-        {
-            typeof(string),
-            typeof(bool)
-        })]
-        static void CardRecruited(RecruitPanel __instance, Card __result)
+        [HarmonyPatch(typeof(Library), nameof(Library.GetCard))]
+        static GameObject GetModifiedCard(GameObject __result, Library __instance,  string Key)
         {
             if (__result != null)
             {
-                ModEvents.InvokeCardRecruited(__result);
+                return __result;
             }
-        }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(RecruitPanel), nameof(RecruitPanel.DirectRecruit), new Type[]
-        {
-            typeof(string),
-            typeof(Card),
-            typeof(bool)
-        })]
-        static void CardRecruited2(RecruitPanel __instance, Card __result)
-        {
-            if (__result != null)
+            if (Key.EndsWith("Noble"))
             {
-                ModEvents.InvokeCardRecruited(__result);
+                GameObject obj = __instance.GetCard(Key.Substring(0, Key.Length - 5));
+                ModdedCard mCard = obj.GetComponent<ModdedCard>();
+                if (mCard != null && mCard.hasNobleVersion)
+                {
+                    ModdedCard.freezeAwake = true;
+                    mCard = GameObject.Instantiate(obj, LibraryExt.modAssets.transform).GetComponent<ModdedCard>();
+                    ModdedCard.freezeAwake = false;
+                    mCard.Ennoble();
+                    __instance.Keys.Add(Key);
+                    __instance.CardPrefabs.Add(mCard.gameObject);
+                    __result = mCard.gameObject;
+                }
             }
+
+            return __result;
         }
-        */
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Card), nameof(Card.InvokeSkill), new Type[]
