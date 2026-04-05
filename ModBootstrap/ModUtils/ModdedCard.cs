@@ -37,7 +37,7 @@ namespace ModUtils
         public HopMod mod;
         public string dirPath;
 
-        public string[] pools;
+        public string[] pools = Array.Empty<string>();
 
         public static bool freezeAwake = false;
 
@@ -56,7 +56,7 @@ namespace ModUtils
                 default:
                 case CardType.Follower:
                     card = Instantiate(Library.Main.GetCard("Militia"), LibraryExt.modAssets.transform).GetComponent<Card>();
-                    card.KeyMark.KB.Keys.Remove("NoTrait[0");
+                    card.KeyMark.KB.Keys.Remove("NoTrait[1");
                     break;
                 case CardType.PassiveFollower:
                     card = Instantiate(Library.Main.GetCard("Obelisk"), LibraryExt.modAssets.transform).GetComponent<Card>();
@@ -114,6 +114,11 @@ namespace ModUtils
             return card;
         }
 
+        public static void CreateNewCard(HopMod mod, CardType type, Action<ModdedCard> action)
+        {
+            action(CreateNewCard(mod, type));
+        }
+
         internal void Ini()
         {
             _card = GetComponent<Card>();
@@ -139,6 +144,7 @@ namespace ModUtils
                 if (newDesc[i] == '}' && lastOpenBracket > -1)
                 {
                     string substring = newDesc.Substring(lastOpenBracket + 1, i - lastOpenBracket);
+                    BootstrapMain.DebugLog("[ModdedCard]", substring);
                     if (int.TryParse(substring, out int result))
                     {
                         result++;
@@ -157,11 +163,23 @@ namespace ModUtils
             _cardInfo.Name = _cardInfo.Name + "Noble";
         }
 
+        public ModdedCard Modify(Action<Card> action)
+        {
+            action(_card);
+            return this;
+        }
+
+        public ModdedCard Modify2(Action<ModdedCard> action)
+        {
+            action(this);
+            return this;
+        }
+
         public ModdedCard SetName(string name, string key)
         {
             _cardInfo.RenderName = name;
             _cardInfo.RealName = name;
-            _cardInfo.Name = mod.Guid + "." + name;
+            _cardInfo.Name = mod.Guid + "." + key;
             gameObject.name = "@" + name;
             _cardInfo.Key = mod.Guid + "." + key;
             return this;

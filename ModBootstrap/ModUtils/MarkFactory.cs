@@ -1,5 +1,6 @@
 ﻿using ADV;
 using HarmonyLib;
+using ModdingCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,14 @@ namespace ModUtils
 {
     public static class MarkFactory
     {
+        public static T InstantiateEditName<T>(this T original, string name) where T : MonoBehaviour
+        {
+            T newObj = GameObject.Instantiate<T>(original);
+            newObj.name = name;
+            return newObj;
+        }
+
+        #region NEW_OBJECT
         public static T NewMark<T>(string name, params string[] keys) where T : Mark
         {
             GameObject obj = new GameObject(name);
@@ -36,6 +45,74 @@ namespace ModUtils
             KeyBase keyBase = obj.AddComponent<KeyBase>();
             keyBase.Keys = keys.ToList();
             signal.KB = keyBase;
+            return signal;
+        }
+
+        public static Signal_Invoke NewInvoke(string skillKey, params string[] keys)
+        {
+            var invoke = NewSignal<Signal_Invoke>(keys);
+            invoke.SkillKey = skillKey;
+            return invoke;
+        }
+
+        public static Signal_Invoke_Random NewInvokeRandom(params string[] skillKeys)
+        {
+            var invoke = NewSignal<Signal_Invoke_Random>(TARGET_SELF);
+            invoke.Channels = new List<float>();
+            invoke.Keys = skillKeys.ToList();
+            return invoke;
+        }
+
+        public static Signal_AddSkill NewAddSkill(Mark_Skill skill, params string[] keys)
+        {
+            var addSkill = NewSignal<Signal_AddSkill>(keys);
+            addSkill.SkillPrefab = skill.gameObject;
+            skill.transform.SetParent(addSkill.transform);
+            return addSkill;
+        }
+
+        public static Signal_AddStatus NewAddStatus(Mark_Status status, params string[] keys)
+        {
+            var addStatus = NewSignal<Signal_AddStatus>(keys);
+            addStatus.StatusPrefabs = new List<GameObject> { status.gameObject };
+            status.transform.SetParent(addStatus.transform);
+            return addStatus;
+        }
+
+        public static Signal_AnimEffect NewAnimEffect(string animKey, params string[] keys)
+        {
+            Signal_AnimEffect anim = NewSignal<Signal_AnimEffect>(keys);
+            GameObject animPrefab = LibraryExt.animPrefabs.FirstOrDefault(a => a.name.ToLower() == animKey?.ToLower());
+            anim.Prefab = animPrefab;
+            return anim;
+        }
+
+        public static Signal_AnimTrigger NewAnimTrigger(string triggerKey, params string[] keys)
+        {
+            Signal_AnimTrigger anim = NewSignal<Signal_AnimTrigger>(keys);
+            anim.AnimKey = triggerKey;
+            return anim;
+        }
+
+        public static Signal_SoundEvent NewSound(string soundKey, params string[] keys)
+        {
+            Signal_SoundEvent sound = NewSignal<Signal_SoundEvent>(keys);
+            sound.Key = soundKey;
+            return sound;
+        }
+
+        public static Mark_Trigger_Signal NewTriggerSignal(string triggerKey, params string[] keys)
+        {
+            var triggerSignal = NewMark<Mark_Trigger_Signal>(triggerKey, keys);
+            triggerSignal.TriggerKey = triggerKey;
+            triggerSignal.MainSignals = new List<GameObject>();
+            return triggerSignal;
+        }
+
+        public static Signal_ColorEffect NewColorEffect(Color color, params string[] keys)
+        {
+            Signal_ColorEffect signal = NewSignal<Signal_ColorEffect>(keys);
+            signal.color = color;
             return signal;
         }
 
@@ -132,6 +209,11 @@ namespace ModUtils
             return signal;
         }
 
+
+
+        #endregion NEW_OBJECT
+
+        #region EDIT
         public static T EditMark<T>(this T mark, Action<T> action) where T : Mark
         {
             action(mark);
@@ -151,6 +233,23 @@ namespace ModUtils
                 action(medium);
             }
             return signal;
+        }
+
+        public static Signal EditSignalInfo(this Signal signal, string message)
+        {
+            SignalInfo signalInfo = signal.GetComponent<SignalInfo>();
+            if (signalInfo != null)
+            {
+                signalInfo.Message = message;
+            }
+            return signal;
+        }
+        #endregion EDIT
+
+        public static Signal AddNobleKey(this Signal s, string key, float add, Vector3 v)
+        {
+            s.GKB().AddNobleKey(key, add, v);
+            return s;
         }
 
         public static NobleKey AddNobleKey(this KeyBase kb, string key, float add)
@@ -223,71 +322,41 @@ namespace ModUtils
             return skill;
         }
 
-        public static Signal_Invoke NewInvoke(string skillKey, params string[] keys)
+        public static Medium_Instant_SubTarget AddTargeting(this Medium_Instant_SubTarget medium, Targeting targeting)
         {
-            var invoke = NewSignal<Signal_Invoke>(keys);
-            invoke.SkillKey = "Auto";
-            return invoke;
+            medium.Targeting = targeting.gameObject;
+            return medium;
         }
 
-        public static Signal_AddSkill NewAddSkill(Mark_Skill skill, params string[] keys)
+        public static T NewSScript<T>(this Signal s, int priority = 0) where T : SScript
         {
-            var addSkill = NewSignal<Signal_AddSkill>(keys);
-            addSkill.SkillPrefab = skill.gameObject;
-            skill.transform.SetParent(addSkill.transform);
-            return addSkill;
+            T script = s.gameObject.AddComponent<T>();
+            script.priority = priority;
+            return script;
         }
 
-        public static Signal_AddStatus NewAddStatus(Mark_Status status, params string[] keys)
+        public static Signal AddScriptableKey(this Signal s, string key, ScriptableAmount.Type type, ScriptableAmount amount)
         {
-            var addStatus = NewSignal<Signal_AddStatus>(keys);
-            addStatus.StatusPrefabs = new List<GameObject> { status.gameObject };
-            status.transform.SetParent(addStatus.transform);
-            return addStatus;
+            var script = s.NewSScript<SScript_KeyChange>(0);
+            script.kb = s.KB;
+            script.key = key;
+            script.amount = amount;
+            script.type = type;
+            return s;
         }
 
-        public static Signal_AnimEffect NewAnimEffect(string animKey, params string[] keys)
+        public static ScriptableAmount_Generic NewSAmountGeneric(Func<Card,float> singleFunc)
         {
-            Signal_AnimEffect anim = NewSignal<Signal_AnimEffect>(keys);
-            GameObject animPrefab = LibraryExt.animPrefabs.FirstOrDefault(a => a.name.ToLower() == animKey?.ToLower());
-            anim.Prefab = animPrefab;
-            return anim;
+            var amount = ScriptableObject.CreateInstance<ScriptableAmount_Generic>();
+            amount.sourceFunc = singleFunc;
+            return amount;
         }
 
-        public static Signal_AnimTrigger NewAnimTrigger(string triggerKey, params string[] keys)
+        public static ScriptableAmount_Generic NewSAmountGeneric(Func<Card,Card, float> doubleFunc)
         {
-            Signal_AnimTrigger anim = NewSignal<Signal_AnimTrigger>(keys);
-            anim.AnimKey = triggerKey;
-            return anim;
-        }
-
-        public static Signal_SoundEvent NewSound(string soundKey, params string[] keys)
-        {
-            Signal_SoundEvent sound = NewSignal<Signal_SoundEvent>(keys);
-            sound.Key = soundKey;
-            return sound;
-        }
-
-        public static T InstantiateEditName<T> (this T original, string name) where T:MonoBehaviour
-        {
-            T newObj = GameObject.Instantiate<T>(original);
-            newObj.name = name;
-            return newObj;
-        }
-
-        public static Mark_Trigger_Signal NewTriggerSignal(string triggerKey, params string[] keys)
-        {
-            var triggerSignal = NewMark<Mark_Trigger_Signal>(triggerKey,keys);
-            triggerSignal.TriggerKey = triggerKey;
-            triggerSignal.MainSignals = new List<GameObject>();
-            return triggerSignal;
-        }
-
-        public static Signal_ColorEffect NewColorEffect(Color color, params string[] keys)
-        {
-            Signal_ColorEffect signal = NewSignal<Signal_ColorEffect>(keys);
-            signal.color = color;
-            return signal;
+            var amount = ScriptableObject.CreateInstance<ScriptableAmount_Generic>();
+            amount.sourceTargetFunc = doubleFunc;
+            return amount;
         }
 
         public static T AddMarkInfo<T>(this T mark, string name, string desc) where T:Mark
@@ -322,6 +391,127 @@ namespace ModUtils
             return skill;
         }
 
+        public static Signal MultiTarget_Random(ApplyToFlags applyToFlags, IgnoreFlags ignoreFlags, bool targetAsSource, int count, bool unique, params Signal[] signals)
+        {
+            //The non-unique case is lacking a bunch of nuance, such as
+            //(1) Targeting both friendly and enemies
+            //(2) Targeting recruit or target
+            Signal mainSignal;
+            if (unique)
+            {
+                mainSignal = MultiTarget_All(applyToFlags, ignoreFlags, targetAsSource, signals);
+                mainSignal.name = mainSignal.name.Replace("All", "Random-Unique");
+                Medium_Explosion explosion = mainSignal.GetComponentInChildren<Medium_Explosion>();
+                explosion.GKB().AddNobleKey("MaxCount", 1);
+                explosion.SetKey("MaxCount", count);
+                return mainSignal;
+            }
+            if (targetAsSource)
+            {
+                BootstrapMain.DebugLog("[MarkFactory]", "MultiTarget_Random does not support [targetAsSource] and [Not Unique] at the same time");
+            }
+            mainSignal = NewMediumsCount<Medium_Instant_SubTarget>("MultiTarget-Random-Chaos", out var subTarget, TARGET_SELF, COUNT(count));
+            mainSignal.GKB().AddNobleKey("Count", 1);
+            Targeting targeting;
+            if ((applyToFlags & ApplyToFlags.Friendly) > 0)
+            {
+                targeting = NewTargeting<Targeting_RandomFriendly>();
+            }
+            else if ((applyToFlags & ApplyToFlags.Enemies) > 0)
+            {
+                targeting = NewTargeting<Targeting_RandomEnemy>();
+            }
+            else
+            {
+                targeting = NewTargeting<Targeting_Source>();
+            }
+
+            if ((ignoreFlags & IgnoreFlags.Source) > 0)
+            {
+                targeting.SetKey("IgnoreSource", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Alive) > 0)
+            {
+                targeting.SetKey("OnlyDeath", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Dead) == 0)
+            {
+                targeting.SetKey("IncludeDeath", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Untargeted) == 0)
+            {
+                targeting.SetKey("IncludeUntargeted", 1);
+            }
+            subTarget.AddTargeting(targeting);
+            subTarget.AddSignal(signals);
+            return mainSignal;
+        }
+
+        public static Signal MultiTarget_Nearby(int range, IgnoreFlags ignoreFlags, bool targetAsSource, params Signal[] signals)
+        {
+            Signal mainSignal = MultiTarget_All(ApplyToFlags.Friendly, ignoreFlags, targetAsSource, signals);
+            mainSignal.name = mainSignal.name.Replace("All", "Adjacent("+range+")");
+            Medium_Explosion explosion = mainSignal.GetComponentInChildren<Medium_Explosion>();
+            explosion.SetKey("IndexRange", 1);
+            return mainSignal;
+        }
+
+        public static Signal MultiTarget_All(ApplyToFlags applyToFlags, IgnoreFlags ignoreFlags, bool targetAsSource, params Signal[] signals)
+        {
+            Signal mainSignal;
+            Medium_Explosion explosion;
+            if (targetAsSource)
+            {
+                mainSignal = NewMediumInverse("MultiTarget-All(Inverse)", out explosion, TARGET_OTHER);
+            }
+            else
+            {
+                mainSignal = NewMedium("MultiTarget-All", out explosion, TARGET_SELF);
+            }
+            //ApplyFlags
+            if ((applyToFlags & ApplyToFlags.Friendly) > 0)
+            {
+                explosion.SetKey("TargetFriendly", 1);
+            }
+            if ((applyToFlags & ApplyToFlags.Enemies) > 0)
+            {
+                explosion.SetKey("TargetEnemies", 1);
+            }
+            if ((applyToFlags & ApplyToFlags.Recruit) > 0)
+            {
+                explosion.SetKey("TargetRecruit", 1);
+            }
+            //IgnoeFlags
+            if ((ignoreFlags & IgnoreFlags.Source) > 0)
+            {
+                explosion.SetKey("IgnoreSource", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Target) > 0)
+            {
+                explosion.SetKey("IgnoreTarget", 1);
+            }
+            //Alive and Dead cannot both be ignored
+            if ((ignoreFlags & IgnoreFlags.Alive) > 0)
+            {
+                explosion.SetKey("TargetOnlyDeath", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Dead) == 0)
+            {
+                explosion.SetKey("TargetDeath", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Targeted) > 0)
+            {
+                explosion.SetKey("IgnoreNonUntargeted", 1);
+            }
+            if ((ignoreFlags & IgnoreFlags.Untargeted) == 0)
+            {
+                explosion.SetKey("TargetUntargeted", 1);
+            }
+            explosion.AddSignal_Explosion(false, signals);
+            return mainSignal;
+        }
+
+        #region COMMON_EFFECTS
         public static Signal[] Effect_AddFaith(float value=1, float bonusDelay = 0)
         {
             Signal[] signals = new Signal[]
@@ -341,22 +531,22 @@ namespace ModUtils
             return signals;
         }
 
-        public static Signal[] Effect_BuffStats(float damage, float life, bool permanent, bool self = true, float bonusDelay = 0) //Need to test with familiar
+        public static Signal[] Effect_BuffStats(float damage, float life, bool permanent, bool self = true, float bonusDelay = 0)
         {
             string colorKey = "";
             string message = "";
             string target = self ? "[SOURCE]" : "[TARGET]";
             Mark_Status_StatMod statMod = NewMark<Mark_Status_StatMod>("Mod", PERM(permanent), BUFF);
-            if (life > 0)
+            if (life != 0)
             {
                 statMod.SetKey("AddLife",life);
                 statMod.SetKey("AutoHeal",1);
-                statMod.GKB().AddNobleKey("AddLife", 1, new Vector3(0,1,0));
+                statMod.GKB().AddNobleKey("AddLife", Math.Sign(life), new Vector3(0, Math.Sign(life), 0));
                 colorKey = "AE_GreenBuff";
-                if (damage > 0)
+                if (damage != 0)
                 {
                     statMod.SetKey("AddDamage",damage);
-                    statMod.GKB().AddNobleKey("AddDamage", 1, new Vector3(1,0,0));
+                    statMod.GKB().AddNobleKey("AddDamage", Math.Sign(damage), new Vector3(Math.Sign(damage), 0,0));
                     colorKey = "AE_YellowBuff";
                     message = target + " gains *Red*[Value1]*CE* / *Green*+[Value2]*CE*";
                 }
@@ -365,10 +555,10 @@ namespace ModUtils
                     message = target + " gains *Green*+[Value2] health*CE*";
                 }
             }
-            else if (damage > 0)
+            else if (damage != 0)
             {
                 statMod.SetKey("AddDamage", damage);
-                statMod.GKB().AddNobleKey("AddDamage", 1, new Vector3(1, 0, 0));
+                statMod.GKB().AddNobleKey("AddDamage", Math.Sign(damage), new Vector3(Math.Sign(damage), 0, 0));
                 colorKey = "AE_RedBuff";
                 message = target + " gains *Red*+[Value1] attack damage*CE*";
             }
@@ -388,7 +578,7 @@ namespace ModUtils
             return signals.ToArray();
         }
 
-        public static Signal[] Effect_RandomDamage(float damage, float count, params string[] keys) //Need to test with turret
+        public static Signal[] Effect_RandomDamage(float damage, float count, float bonusDelay = 0)
         {
             var randomDamage = NewMediumsCount<Medium_Instant_SubTarget>("RandomDamage", out var mediumDamage, TARGET_SELF, "RandomDamage[1", COUNT(count));
             if (count > 0)
@@ -397,7 +587,6 @@ namespace ModUtils
             }
             randomDamage.NewSignalInfo("[Source] deals *Orange*[Value1] Random Damage*CE*", new Vector3(count,0,0));
             KeyBase kb = randomDamage.GKB();
-            kb.Keys.AddRange(keys);
             mediumDamage.SetKey("StepDelay", 0.1f);
             mediumDamage.SetKey("Delay", 0);
             mediumDamage.Targeting = NewTargeting<Targeting_RandomEnemy>().gameObject;
@@ -431,7 +620,7 @@ namespace ModUtils
             return Effect_SummonWithStats(summonKey, -99, -99, numberOfCopies, behind, bonusDelay);
         }
 
-        public static Signal[] Effect_SummonWithStats(string summonKey, float damage, float life, int numberOfCopies, bool behind = true, float bonusDelay = 0) //Need to test summon interaction
+        public static Signal[] Effect_SummonWithStats(string summonKey, float damage, float life, int numberOfCopies, bool behind = true, float bonusDelay = 0)
         {
             List<Signal> signals = new List<Signal>()
             {
@@ -462,6 +651,37 @@ namespace ModUtils
             }
             return signals.ToArray();
         }
+
+        public static Signal[] Effect_SummonCopy(bool copyStats = true, float damage = 0, float life = 0, bool behind = true, float bonusDelay = 0)
+        {
+            List<Signal> signals = new List<Signal>()
+            {
+                NewAnimEffect("AE_Summon",TARGET_SELF, DELAY(bonusDelay)),
+                NewSignal<Signal_AddActingDelay>(DELAY_SCALE(0.5f), DELAY_II(bonusDelay)),
+                NewSound("Summon", TARGET_SELF, DELAY(bonusDelay))
+            };
+            float increment = behind ? -0.01f : 0.01f;
+            Signal_Summon summon = NewSignal<Signal_Summon_Copy>(TARGET_OTHER, "TargetKey[1", "SummonAggro[" + increment);
+            if (life >= 0)
+            {
+                summon.SetKey("SummonLife", life);
+                summon.GKB().AddNobleKey("SummonLife", 1);
+            }
+            if (damage >= 0)
+            {
+                summon.SetKey("SummonDamage", damage);
+                summon.GKB().AddNobleKey("SummonDamage", 1);
+            }
+            if (copyStats)
+            {
+                summon.SetKey("CopyTargetStats", 1);
+            }
+            signals.Insert(0, summon);
+            summon.NewSignalInfo("*BlueGreen*[Target]*CE* has been copied");
+            return signals.ToArray();
+        }
+
+        #endregion COMMON_EFFECTS
     }
-    
+
 }

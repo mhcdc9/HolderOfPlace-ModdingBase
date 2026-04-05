@@ -14,6 +14,17 @@ namespace ModdingCore
     [HarmonyPatch]
     static class PatchInEvents
     {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Card), nameof(Card.RealSendSignal))]
+        static void RunSScripts(Signal S)
+        {
+            IEnumerable<SScript> scripts = S.GetComponents<SScript>().Where(s => s.enabled).OrderByDescending(s => s.priority);
+            foreach (SScript script in scripts)
+            {
+                script.Run(S);
+            }
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(TitleScreenControl), "Start")]
         static void AddModMenu()

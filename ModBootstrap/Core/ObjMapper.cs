@@ -1,5 +1,6 @@
 ﻿using ADV;
 using HarmonyLib;
+using ModUtils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -103,7 +104,12 @@ namespace ModdingCore
             {
                 return prefix + "[NoStatus?]\n";
             }
-            string output = prefix + "[ST]" + status.GetType().Name + "(" + status.name + "): ";
+            string name = status.name;
+            if (status is Mark_Trigger_Signal triggerSignal)
+            {
+                name = triggerSignal.TriggerKey ?? "Null?";
+            }
+            string output = prefix + "[ST]" + status.GetType().Name + "(" + name + "): ";
             output += MapKeys(status.GKB()) + "\n";
             if (status.HasKey("AddCondition"))
             {
@@ -144,8 +150,13 @@ namespace ModdingCore
             SignalInfo info = signal.GetComponent<SignalInfo>();
             if (info != null)
             {
-                output += prefix + "|[I] " + (info.Message ?? "Null?") + "\n";
+                output += prefix + "|\"" + (info.Message ?? "Null?") + "\"\n";
             }
+
+            signal.transform.GetComponents<SScript>().Where(s => s.enabled).Do(s =>
+                {
+                    output += prefix + "|{" + s.ToString() + "}\n";
+                });
 
             List<Medium> mediums = new List<Medium>();
             if (signal is Signal_CreateMedium sigMedium)
